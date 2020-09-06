@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "blink",
+			"path": "dev/arduino/blink"
+		},
+		{
+			"name": "MecanumMotors",
+			"path": "dev/arduino/MecanumMotors"
+		}
+	],
+	"settings": {}
+}
