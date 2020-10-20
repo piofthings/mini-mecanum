@@ -47,15 +47,36 @@ void motorTest() {
   delay(1000);
 }
 
+void setSpeed(int speed){
+  motor1.setSpeed(speed);
+  motor2.setSpeed(speed);
+  motor3.setSpeed(speed);
+  motor4.setSpeed(speed);
+}
+
 void receiveEvent(int howMany) {
-  while (Wire.available()) { // loop through all but the last
-    char c = Wire.read(); // receive byte as a character
-    digitalWrite(LED_BUILTIN, c);
+  if(howMany == 3){
+    int offset = Wire.read(); // receive byte as a character
+    int c = Wire.read();
+    Serial.print("Command");
+    Serial.println(c);
+    switch (c)
+    {
+      case 1:
+        int speed = Wire.read();
+        Serial.print("Speed ");
+        Serial.println(speed);
+        setSpeed(speed);
+        break;
+    }
   }
 }
 
 // The setup routine runs once when you press reset.
 void setup() {
+  Serial.begin(115200);
+  Serial.println("Starting...");
+
   Wire.begin(0x8);
   Wire.onReceive(receiveEvent);
   pinMode(LED_BUILTIN, OUTPUT);
