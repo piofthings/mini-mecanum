@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "CytronMotorDriver.h"
-
+#include "main.h"
 
 // Configure the motor driver.
-CytronMD motor1(PWM_DIR, 9, 8);   // PWM 1A = Pin 9, PWM 1B = Pin 8.
-CytronMD motor2(PWM_DIR, 11, 12); // PWM 2A = Pin 10, PWM 2B = Pin 11.
+CytronMD motor1(PWM_DIR, 10, 16);   // PWM 1A = Pin 9, PWM 1B = Pin 8.
+CytronMD motor2(PWM_DIR, 9, 8); // PWM 2A = Pin 10, PWM 2B = Pin 11.
 CytronMD motor3(PWM_DIR, 5, 4);   // PWM 1A = Pin 5, PWM 1B = Pin 4.
-CytronMD motor4(PWM_DIR, 3, 2); // PWM 2A = Pin 3, PWM 2B = Pin 2.
+CytronMD motor4(PWM_DIR, 7, 6); // PWM 2A = Pin 3, PWM 2B = Pin 2.
 
 void motorTest() {
   motor1.setSpeed(64);   // Motor 1 runs forward at 50% speed.
@@ -49,9 +49,9 @@ void motorTest() {
 
 void setSpeed(int speed){
   motor1.setSpeed(speed);
-  motor2.setSpeed(speed);
-  motor3.setSpeed(speed);
-  motor4.setSpeed(speed);
+  //motor2.setSpeed(speed);
+  //motor3.setSpeed(speed);
+  //motor4.setSpeed(speed);
 }
 
 void receiveEvent(int howMany) {
@@ -62,7 +62,7 @@ void receiveEvent(int howMany) {
     Serial.println(c);
     switch (c)
     {
-      case 1:
+      case CMD_SET_SPEED:
         int speed = Wire.read();
         Serial.print("Speed ");
         Serial.println(speed);
@@ -87,6 +87,6 @@ void setup() {
 
 // The loop routine runs over and over again forever.
 void loop() {
-  //motorTest();
-  delay(100);
+  motorTest();
+  //delay(100);
 }
