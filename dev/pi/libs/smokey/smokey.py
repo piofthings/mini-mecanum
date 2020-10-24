@@ -40,5 +40,5 @@ class Smokey:
                 data = [0x3, turn_factor]
                 self.__bus.write_i2c_block_data(self.__addr, 0, data)
 
-        def test(self, light_status)
+        def test(self, light_status):
                 bus.write(self.__addr, 0, light_status)
