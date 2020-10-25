@@ -3,7 +3,9 @@
 import os
 import sys
 
-from smbus2 import SMBus
+# from smbus2 import SMBus
+import serial
+import time
 
 """
 Smokey is a Python library that talks to an Arduino over I2C.
@@ -19,26 +21,28 @@ It works in conjuction with adruino/smokey library in this repository
         +10 = strafe right
 """ 
 class Smokey:
-        __addr = 0x8
-        __bus = None
+        #__addr = 0x8
+        #__bus = None
         __isDebug = False
+        __ser = None
 
         def __init__(self, isDebug=False):
-                self.__bus = SMBus(1) # indicates /dev/ic2-1
                 self.__isDebug = isDebug
+                self.__ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+                self.__ser.flush()
 
 
         def set_speed(self, speed):
-                data  = [0x1, speed]
-                self.__bus.write_i2c_block_data(self.__addr, 0, data)
+                data  = "1:" + str(speed) + "\n"
+                self.__ser.write(data.encode('utf-8'))
 
         def set_direction(self, direction):
-                data = [0x2, direction]
-                self.__bus.write_i2c_block_data(self.__addr, 0, data)
+                data  = "2:" _ str(speed) + "\n"
+                self.__ser.write(data.encode('utf-8'))
 
         def turn(self, turn_factor):
-                data = [0x3, turn_factor]
-                self.__bus.write_i2c_block_data(self.__addr, 0, data)
+                # data = [0x3, turn_factor]
+                # self.__bus.write_i2c_block_data(self.__addr, 0, data)
 
         def test(self, light_status):
-                bus.write(self.__addr, 0, light_status)
+                # bus.write(self.__addr, 0, light_status)

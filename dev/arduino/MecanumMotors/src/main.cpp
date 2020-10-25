@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Wire.h>
 #include "CytronMotorDriver.h"
 #include "main.h"
 
@@ -7,14 +6,14 @@
 CytronMD motor1(PWM_DIR, 10, 16);   // PWM 1A = Pin 9, PWM 1B = Pin 8.
 CytronMD motor2(PWM_DIR, 9, 8); // PWM 2A = Pin 10, PWM 2B = Pin 11.
 CytronMD motor3(PWM_DIR, 5, 4);   // PWM 1A = Pin 5, PWM 1B = Pin 4.
-CytronMD motor4(PWM_DIR, 7, 6); // PWM 2A = Pin 3, PWM 2B = Pin 2.
+CytronMD motor4(PWM_DIR, 6, 7); // PWM 2A = Pin 3, PWM 2B = Pin 2.
 
 #define DIR_FORWARD 1;
 #define DIR_REVERSE -1;
 
 int currentSpeed = 0;
 int currentDirection = DIR_FORWARD;
-int currentTurnfactor = 
+
 
 void testMotors() {
   motor1.setSpeed(64);    // Motor 1 runs forward at 50% speed.
@@ -26,7 +25,7 @@ void testMotors() {
   motor1.setSpeed(128);   // Motor 1 runs forward at full speed.
   motor2.setSpeed(128);   // Motor 2 runs backward at full speed.
   motor3.setSpeed(128);   // Motor 1 runs forward at full speed.
-  motor4.setSpeed(128);   // Motor 2 runs backward at full speed.
+  motor4.setSpeed(128);   // Motor 2 runs backnward at full speed.
   delay(1000);
 
   motor1.setSpeed(0);     // Motor 1 stops.
@@ -70,24 +69,28 @@ void setDirection(int direction){
 }
 
 
-void receiveEvent(int howMany) {
-  if(howMany == 3){
-    int offset = Wire.read(); // receive byte as a character
-    int c = Wire.read();
+void receiveEvent() {
+  if (Serial.available() > 0) {
+    String c = Serial.readStringUntil(':');
+    int command = c.toInt();
+ 
     Serial.print("Command: ");
     Serial.println(c);
-    switch (c)
+
+    switch (command)
     {
       case 1: // Set Speed
-        int speed = Wire.read();
+        String s = Serial.readStringUntil('\n');
+        int speed = s.toInt();
         setSpeed(speed);
         Serial.print("Speed: ");
         Serial.println(speed);
         break;
       case 2: // Set Direction
-        int direction = Wire.read();
+        String d = Serial.readStringUntil('\n');
+        int direction = d.toInt();
         Serial.print("Direction: ");
-        Serial.println(direction);
+        Serial.println(d);
         setDirection(direction);
         break;
       case 3: // Set Turnfactor
@@ -101,16 +104,20 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Starting...");
 
-  Wire.begin(0x8);
-  Wire.onReceive(receiveEvent);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  //receiveEvent();
+  //testMotors()
+
+  // Wire.begin(0x8);
+  // Wire.onReceive(receiveEvent);
+  // pinMode(LED_BUILTIN, OUTPUT);
+  // digitalWrite(LED_BUILTIN, LOW);
 }
 
 
 
 // The loop routine runs over and over again forever.
 void loop() {
-  motorTest();
+  //testMotors();
+  receiveEvent();
   //delay(100);
 }
