@@ -28,7 +28,7 @@ class Smokey:
 
         def __init__(self, isDebug=False):
                 self.__isDebug = isDebug
-                self.__ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+                self.__ser = serial.Serial('/dev/ttyS0', 115200, timeout=1)
                 self.__ser.flush()
 
 
