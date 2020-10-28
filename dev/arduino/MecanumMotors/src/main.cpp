@@ -54,6 +54,7 @@ void testMotors() {
 }
 
 void setSpeed(int speed){
+  currentSpeed = speed;
   motor1.setSpeed(speed*currentDirection);
   motor2.setSpeed(speed*currentDirection);
   motor3.setSpeed(speed*currentDirection);
@@ -65,44 +66,49 @@ void setDirection(int direction){
   motor2.setSpeed(currentSpeed*direction);
   motor3.setSpeed(currentSpeed*direction);
   motor4.setSpeed(currentSpeed*direction);
-  currentSpeed = direction;
+  currentDirection = direction;
 }
 
 
 void receiveEvent() {
-  if (Serial.available() > 0) {
-    String c = Serial.readStringUntil(':');
+  if (Serial1.available() > 0) {
+    digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+
+    String c = Serial1.readStringUntil(':');
     int command = c.toInt();
  
-    Serial.print("Command: ");
-    Serial.println(c);
+    Serial1.print("Command: ");
+    Serial1.println(c);
 
     switch (command)
     {
       case 1: // Set Speed
-        String s = Serial.readStringUntil('\n');
+        String s = Serial1.readStringUntil('\n');
         int speed = s.toInt();
         setSpeed(speed);
-        Serial.print("Speed: ");
-        Serial.println(speed);
+        Serial1.print("Speed: ");
+        Serial1.println(speed);
         break;
       case 2: // Set Direction
-        String d = Serial.readStringUntil('\n');
+        String d = Serial1.readStringUntil('\n');
         int direction = d.toInt();
-        Serial.print("Direction: ");
-        Serial.println(d);
+        Serial1.print("Direction: ");
+        Serial1.println(d);
         setDirection(direction);
         break;
       case 3: // Set Turnfactor
         break;
     }
   }
+  digitalWrite(LED_BUILTIN, LOW);
+
 }
 
 // The setup routine runs once when you press reset.
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting...");
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial1.begin(9600);
+  Serial1.println("Starting...");
 
   //receiveEvent();
   //testMotors()
