@@ -20,7 +20,7 @@ CytronSoftPwmMD::CytronSoftPwmMD(MODE mode, uint8_t pin1, uint8_t pin2)
     case PWM_SWPM:
         pinMode(_pin1, OUTPUT);
         pinMode(_pin2, OUTPUT);
-        digitalWrite(_pin1, LOW);
+        SoftPWMSet(_pin1, LOW);
         SoftPWMSet(_pin2, LOW);
         break;
     default:
@@ -59,12 +59,12 @@ void CytronSoftPwmMD::setSpeed(int16_t speed)
     case PWM_SWPM:
         if (speed >= 0)
         {
-            analogWrite(_pin1, speed);
+            SoftPWMSet(_pin1, speed);
             SoftPWMSet(_pin2, 0);
         }
         else
         {
-            analogWrite(_pin1, 0);
+            SoftPWMSet(_pin1, 0);
             SoftPWMSet(_pin2, -speed);
         }
         break;
