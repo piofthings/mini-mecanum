@@ -1,4 +1,7 @@
-// Copied from https://github.com/bhagman/SoftPWM
+/**
+|| Adapted by:    Sumit (aka @piofthings) for use as a soft PWM library 
+                  to be used to Cytron Motor MDD3A motor drivers
+*/
 /*
 || @author         Brett Hagman <bhagman@wiring.org.co>
 || @contribution   Paul Stoffregen (paul at pjrc dot com)
@@ -41,8 +44,8 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "SoftPWM.h"
-#include "SoftPWM_timer.h"
+#include "SoftwarePWM.h"
+#include "SoftwarePWM_timer.h"
 
 #if defined(WIRING)
  #include <Wiring.h>
@@ -53,7 +56,7 @@
 #endif
 
 #if F_CPU
-#define SOFTPWM_FREQ 120UL
+#define SOFTPWM_FREQ 30UL
 #define SOFTPWM_OCR (F_CPU/(8UL*256UL*SOFTPWM_FREQ))
 #else
 // 130 == 60 Hz (on 16 MHz part)
@@ -152,7 +155,7 @@ ISR(SOFTPWM_TIMER_INTERRUPT)
 
 
 
-void SoftPWMBegin(uint8_t defaultPolarity)
+void SoftwarePWMBegin(uint8_t defaultPolarity)
 {
   // We can tweak the number of PWM period by changing the prescalar
   // and the OCR - we'll default to ck/8 (CS21 set) and OCR=128.
@@ -187,7 +190,7 @@ void SoftPWMBegin(uint8_t defaultPolarity)
 }
 
 
-void SoftPWMSetPolarity(int8_t pin, uint8_t polarity)
+void SoftwarePWMSetPolarity(int8_t pin, uint8_t polarity)
 {
   uint8_t i;
 
@@ -205,13 +208,13 @@ void SoftPWMSetPolarity(int8_t pin, uint8_t polarity)
 }
 
 
-void SoftPWMSetPercent(int8_t pin, uint8_t percent, uint8_t hardset)
+void SoftwarePWMSetPercent(int8_t pin, uint8_t percent, uint8_t hardset)
 {
-  SoftPWMSet(pin, ((uint16_t)percent * 255) / 100, hardset);
+  SoftwarePWMSet(pin, ((uint16_t)percent * 255) / 100, hardset);
 }
 
 
-void SoftPWMSet(int8_t pin, uint8_t value, uint8_t hardset)
+void SoftwarePWMSet(int8_t pin, uint8_t value, uint8_t hardset)
 {
   int8_t firstfree = -1;  // first free index
   uint8_t i;
@@ -280,7 +283,7 @@ void SoftPWMEnd(int8_t pin)
 }
 
 
-void SoftPWMSetFadeTime(int8_t pin, uint16_t fadeUpTime, uint16_t fadeDownTime)
+void SoftwarePWMSetFadeTime(int8_t pin, uint16_t fadeUpTime, uint16_t fadeDownTime)
 {
   int16_t fadeAmount;
   uint8_t i;

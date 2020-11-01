@@ -7,7 +7,7 @@ SoftPwmMotorDriver::SoftPwmMotorDriver(MODE mode, uint8_t pin1, uint8_t pin2)
     _pin1 = pin1;
     _pin2 = pin2;
 
-    SoftPWMBegin();
+    SoftwarePWMBegin();
 
     switch (_mode)
     {
@@ -20,8 +20,8 @@ SoftPwmMotorDriver::SoftPwmMotorDriver(MODE mode, uint8_t pin1, uint8_t pin2)
     case PWM_SWPM:
         pinMode(_pin1, OUTPUT);
         pinMode(_pin2, OUTPUT);
-        SoftPWMSet(_pin1, LOW);
-        SoftPWMSet(_pin2, LOW);
+        SoftwarePWMSet(_pin1, LOW);
+        SoftwarePWMSet(_pin2, LOW);
         break;
     default:
         break;
@@ -59,13 +59,13 @@ void SoftPwmMotorDriver::setSpeed(int16_t speed)
     case PWM_SWPM:
         if (speed >= 0)
         {
-            SoftPWMSet(_pin1, speed);
-            SoftPWMSet(_pin2, 0);
+            SoftwarePWMSet(_pin1, speed);
+            SoftwarePWMSet(_pin2, 0);
         }
         else
         {
-            SoftPWMSet(_pin1, 0);
-            SoftPWMSet(_pin2, -speed);
+            SoftwarePWMSet(_pin1, 0);
+            SoftwarePWMSet(_pin2, -speed);
         }
         break;
     }

@@ -1,4 +1,6 @@
-// Copie from https://github.com/bhagman/SoftPWM/blob/master/SoftPWM.h
+/**
+|| Adapted by:    Sumit (aka @piofthings) for use as a soft PWM library 
+                  to be used to Cytron Motor MDD3A motor drivers
 /*
 || @author         Brett Hagman <bhagman@wiring.org.co>
 || @url            http://wiring.org.co/
@@ -48,11 +50,11 @@
 
 #define ALL -1
 
-void SoftPWMBegin(uint8_t defaultPolarity = SOFTPWM_NORMAL);
-void SoftPWMSet(int8_t pin, uint8_t value, uint8_t hardset = 0);
-void SoftPWMSetPercent(int8_t pin, uint8_t percent, uint8_t hardset = 0);
+void SoftwarePWMBegin(uint8_t defaultPolarity = SOFTPWM_NORMAL);
+void SoftwarePWMSet(int8_t pin, uint8_t value, uint8_t hardset = 0);
+void SoftwarePWMSetPercent(int8_t pin, uint8_t percent, uint8_t hardset = 0);
 void SoftPWMEnd(int8_t pin);
-void SoftPWMSetFadeTime(int8_t pin, uint16_t fadeUpTime, uint16_t fadeDownTime);
-void SoftPWMSetPolarity(int8_t pin, uint8_t polarity);
+void SoftwarePWMSetFadeTime(int8_t pin, uint16_t fadeUpTime, uint16_t fadeDownTime);
+void SoftwarePWMSetPolarity(int8_t pin, uint8_t polarity);
 
 #endif

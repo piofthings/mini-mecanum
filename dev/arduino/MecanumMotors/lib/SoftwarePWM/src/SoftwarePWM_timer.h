@@ -1,4 +1,6 @@
-// Copied from https://github.com/bhagman/SoftPWM/blob/master/SoftPWM_timer.h
+/**
+|| Adapted by:    Sumit (aka @piofthings) for use as a soft PWM library 
+                  to be used to Cytron Motor MDD3A motor drivers
 /*
 || @author         Paul Stoffregen (paul at pjrc dot com)
 || @contribution   Brett Hagman <bhagman@wiring.org.co>
@@ -25,7 +27,7 @@
 
 // allow certain chips to use different timers
 #if defined(__AVR_ATmega32U4__)
-#define USE_TIMER4_HS // Teensy 2.0 lacks timer2, but has high speed timer4 :-)
+#define USE_TIMER4_HS // Teensy 2.0 lacks timer2, but has high speedSoftwarePWMSet timer4 :-)
 #elif defined(__arm__) && defined(TEENSYDUINO)
 #define USE_INTERVALTIMER  // Teensy 3.x has special interval timers :-)
 #else
