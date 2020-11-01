@@ -3,10 +3,10 @@
 #include "main.h"
 
 // Configure the motor driver.
-CytronSoftPwmMD motor1(PWM_DIR, 10, 16);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
-CytronSoftPwmMD motor2(PWM_DIR, 9, 8);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
-CytronSoftPwmMD motor3(PWM_DIR, 5, 4);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
-CytronSoftPwmMD motor4(PWM_DIR, 6, 7);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
+SoftPwmMotorDriver motor1(PWM_DIR, 10, 16);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
+SoftPwmMotorDriver motor2(PWM_DIR, 9, 8);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
+SoftPwmMotorDriver motor3(PWM_DIR, 5, 4);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
+SoftPwmMotorDriver motor4(PWM_DIR, 6, 7);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
 
 #define DIR_FORWARD 1;
 #define DIR_REVERSE -1;
@@ -20,37 +20,37 @@ void testMotors() {
   motor2.setSpeed(64);    // Motor 2 runs backward at 50% speed.
   motor3.setSpeed(64);    // Motor 1 runs forward at 50% speed.
   motor4.setSpeed(64);    // Motor 2 runs backward at 50% speed.
-  delay(1000);
+  // delay(1000);
 
-  motor1.setSpeed(128);   // Motor 1 runs forward at full speed.
-  motor2.setSpeed(128);   // Motor 2 runs backward at full speed.
-  motor3.setSpeed(128);   // Motor 1 runs forward at full speed.
-  motor4.setSpeed(128);   // Motor 2 runs backnward at full speed.
-  delay(1000);
+  // motor1.setSpeed(128);   // Motor 1 runs forward at full speed.
+  // motor2.setSpeed(128);   // Motor 2 runs backward at full speed.
+  // motor3.setSpeed(128);   // Motor 1 runs forward at full speed.
+  // motor4.setSpeed(128);   // Motor 2 runs backnward at full speed.
+  // delay(1000);
 
-  motor1.setSpeed(0);     // Motor 1 stops.
-  motor2.setSpeed(0);     // Motor 2 stops.
-  motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
-  motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
-  delay(1000);
+  // motor1.setSpeed(0);     // Motor 1 stops.
+  // motor2.setSpeed(0);     // Motor 2 stops.
+  // motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
+  // motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
+  // delay(1000);
 
-  motor1.setSpeed(-64);   // Motor 1 runs backward at 50% speed.
-  motor2.setSpeed(-64);   // Motor 2 runs forward at 50% speed.
-  motor3.setSpeed(-64);   // Motor 1 runs forward at full speed.
-  motor4.setSpeed(-64);   // Motor 2 runs backward at full speed.
-  delay(1000);
+  // motor1.setSpeed(-64);   // Motor 1 runs backward at 50% speed.
+  // motor2.setSpeed(-64);   // Motor 2 runs forward at 50% speed.
+  // motor3.setSpeed(-64);   // Motor 1 runs forward at full speed.
+  // motor4.setSpeed(-64);   // Motor 2 runs backward at full speed.
+  // delay(1000);
 
-  motor1.setSpeed(-128);    // Motor 1 runs backward at full speed.
-  motor2.setSpeed(-128);    // Motor 2 runs forward at full speed.
-  motor3.setSpeed(-128);    // Motor 1 runs forward at full speed.
-  motor4.setSpeed(-128);    // Motor 2 runs backward at full speed.
-  delay(1000);
+  // motor1.setSpeed(-128);    // Motor 1 runs backward at full speed.
+  // motor2.setSpeed(-128);    // Motor 2 runs forward at full speed.
+  // motor3.setSpeed(-128);    // Motor 1 runs forward at full speed.
+  // motor4.setSpeed(-128);    // Motor 2 runs backward at full speed.
+  // delay(1000);
 
-  motor1.setSpeed(0);     // Motor 1 stops.
-  motor2.setSpeed(0);     // Motor 2 stops.
-  motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
-  motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
-  delay(1000);
+  // motor1.setSpeed(0);     // Motor 1 stops.
+  // motor2.setSpeed(0);     // Motor 2 stops.
+  // motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
+  // motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
+  // delay(1000);
 }
 
 void setSpeed(int speed){
@@ -117,6 +117,6 @@ void setup() {
 
 // The loop routine runs over and over again forever.
 void loop() {
-  //testMotors();
+  testMotors();
   receiveEvent();
 }

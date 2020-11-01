@@ -13,10 +13,10 @@ enum MODE {
 
 
 
-class CytronSoftPwmMD
+class SoftPwmMotorDriver
 {
   public:
-    CytronSoftPwmMD(MODE mode, uint8_t pin1, uint8_t pin2);
+    SoftPwmMotorDriver(MODE mode, uint8_t pin1, uint8_t pin2);
     void setSpeed(int16_t speed);
     
   protected:
