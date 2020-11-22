@@ -255,11 +255,11 @@ void SoftwarePWMSet(int8_t pin, uint8_t value, uint8_t hardset)
     
     // now prepare the pin for output
     // turn it off to start (no glitch)
-    if (_softpwm_defaultPolarity == SOFTPWM_NORMAL)
-      digitalWrite(pin, LOW);
-    else
-      digitalWrite(pin, HIGH);
-    pinMode(pin, OUTPUT);
+    // if (_softpwm_defaultPolarity == SOFTPWM_NORMAL)
+    //   digitalWrite(pin, LOW);
+    // else
+    //   digitalWrite(pin, HIGH);
+    // pinMode(pin, OUTPUT);
   }
 }
 

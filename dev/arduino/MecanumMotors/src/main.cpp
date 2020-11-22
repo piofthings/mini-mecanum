@@ -1,72 +1,98 @@
 #include <Arduino.h>
+#include <Adafruit_INA260.h>
 #include "SoftPWMMotorDriver.h"
 #include "main.h"
-
-// Configure the motor driver.
-SoftPwmMotorDriver motor1(PWM_SWPM, 10, 16);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
-SoftPwmMotorDriver motor2(PWM_SWPM, 9, 8);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
-SoftPwmMotorDriver motor3(PWM_SWPM, 5, 4);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
-SoftPwmMotorDriver motor4(PWM_SWPM, 6, 7);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
 
 #define DIR_FORWARD 1;
 #define DIR_REVERSE -1;
 
 int currentSpeed = 0;
 int currentDirection = DIR_FORWARD;
+float max_voltage_mv = 6000.00;
+float ina_input_voltage = 0;
+float ina_input_current = 0;
+float ina_input_power = 0;
 
+// Configure the motor driver.
+SoftPwmMotorDriver motor1(PWM_SWPM, 10, 16, max_voltage_mv, 8400.0);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
+SoftPwmMotorDriver motor2(PWM_SWPM, 9, 8, max_voltage_mv, 8400.0);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
+SoftPwmMotorDriver motor3(PWM_SWPM, 5, 4, max_voltage_mv, 8400.0);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
+SoftPwmMotorDriver motor4(PWM_SWPM, 6, 7, max_voltage_mv, 8400.0);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
+
+
+Adafruit_INA260 ina260 = Adafruit_INA260();
 
 void testMotors() {
-  motor1.setSpeed(64);    // Motor 1 runs forward at 50% speed.
-  motor2.setSpeed(64);    // Motor 2 runs backward at 50% speed.
-  motor3.setSpeed(64);    // Motor 1 runs forward at 50% speed.
-  motor4.setSpeed(64);    // Motor 2 runs backward at 50% speed.
+  Serial.print("ina_input_voltage:");
+  Serial.println(ina_input_voltage);
+  motor1.setSpeed(64, ina_input_voltage);    // Motor 1 runs forward at 50% speed.
+  motor2.setSpeed(64, ina_input_voltage);    // Motor 2 runs backward at 50% speed.
+  motor3.setSpeed(64, ina_input_voltage);    // Motor 1 runs forward at 50% speed.
+  motor4.setSpeed(64, ina_input_voltage);    // Motor 2 runs backward at 50% speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
+
   delay(5000);
 
-  motor1.setSpeed(128);   // Motor 1 runs forward at full speed.
-  motor2.setSpeed(128);   // Motor 2 runs backward at full speed.
-  motor3.setSpeed(128);   // Motor 1 runs forward at full speed.
-  motor4.setSpeed(128);   // Motor 2 runs backnward at full speed.
+  motor1.setSpeed(255, ina_input_voltage);   // Motor 1 runs forward at full speed.
+  motor2.setSpeed(255, ina_input_voltage);   // Motor 2 runs backward at full speed.
+  motor3.setSpeed(255, ina_input_voltage);   // Motor 1 runs forward at full speed.
+  motor4.setSpeed(255, ina_input_voltage);   // Motor 2 runs backnward at full speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
   delay(5000);
 
-  motor1.setSpeed(0);     // Motor 1 stops.
-  motor2.setSpeed(0);     // Motor 2 stops.
-  motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
-  motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
+  motor1.setSpeed(0, ina_input_voltage);     // Motor 1 stops.
+  motor2.setSpeed(0, ina_input_voltage);     // Motor 2 stops.
+  motor3.setSpeed(0, ina_input_voltage);     // Motor 1 runs forward at full speed.
+  motor4.setSpeed(0, ina_input_voltage);     // Motor 2 runs backward at full speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
   delay(5000);
 
-  motor1.setSpeed(-64);   // Motor 1 runs backward at 50% speed.
-  motor2.setSpeed(-64);   // Motor 2 runs forward at 50% speed.
-  motor3.setSpeed(-64);   // Motor 1 runs forward at full speed.
-  motor4.setSpeed(-64);   // Motor 2 runs backward at full speed.
+  motor1.setSpeed(-64, ina_input_voltage);   // Motor 1 runs backward at 50% speed.
+  motor2.setSpeed(-64, ina_input_voltage);   // Motor 2 runs forward at 50% speed.
+  motor3.setSpeed(-64, ina_input_voltage);   // Motor 1 runs forward at full speed.
+  motor4.setSpeed(-64, ina_input_voltage);   // Motor 2 runs backward at full speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
   delay(5000);
 
-  motor1.setSpeed(-128);    // Motor 1 runs backward at full speed.
-  motor2.setSpeed(-128);    // Motor 2 runs forward at full speed.
-  motor3.setSpeed(-128);    // Motor 1 runs forward at full speed.
-  motor4.setSpeed(-128);    // Motor 2 runs backward at full speed.
+  motor1.setSpeed(-255, ina_input_voltage);    // Motor 1 runs backward at full speed.
+  motor2.setSpeed(-255, ina_input_voltage);    // Motor 2 runs forward at full speed.
+  motor3.setSpeed(-255, ina_input_voltage);    // Motor 1 runs forward at full speed.
+  motor4.setSpeed(-255, ina_input_voltage);    // Motor 2 runs backward at full speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
   delay(5000);
 
-  motor1.setSpeed(0);     // Motor 1 stops.
-  motor2.setSpeed(0);     // Motor 2 stops.
-  motor3.setSpeed(0);     // Motor 1 runs forward at full speed.
-  motor4.setSpeed(0);     // Motor 2 runs backward at full speed.
+  motor1.setSpeed(0, ina_input_voltage);     // Motor 1 stops.
+  motor2.setSpeed(0, ina_input_voltage);     // Motor 2 stops.
+  motor3.setSpeed(0, ina_input_voltage);     // Motor 1 runs forward at full speed.
+  motor4.setSpeed(0, ina_input_voltage);     // Motor 2 runs backward at full speed.
+  ina_input_current = ina260.readCurrent();
+  Serial.print("ina_input_current:");
+  Serial.println(ina_input_current);
   delay(5000);
 }
+
 
 void setSpeed(int speed){
   currentSpeed = speed;
-  motor1.setSpeed(speed*currentDirection);
-  motor2.setSpeed(speed*currentDirection);
-  motor3.setSpeed(speed*currentDirection);
-  motor4.setSpeed(speed*currentDirection);
+  motor1.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor2.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor3.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor4.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
 }
 
 void setDirection(int direction){
-  motor1.setSpeed(currentSpeed*direction);
-  motor2.setSpeed(currentSpeed*direction);
-  motor3.setSpeed(currentSpeed*direction);
-  motor4.setSpeed(currentSpeed*direction);
   currentDirection = direction;
+  setSpeed(currentSpeed);
 }
 
 
@@ -109,7 +135,11 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial1.begin(115200);
   Serial1.println("Starting...");
-
+  if (!ina260.begin()) 
+  {    
+    Serial.println("Couldn't find INA260 chip");    
+    //while (1);  
+  }
   //testMotors();
 }
 
@@ -117,6 +147,20 @@ void setup() {
 
 // The loop routine runs over and over again forever.
 void loop() {
+  ina_input_voltage = ina260.readBusVoltage();
+  ina_input_current = ina260.readCurrent();
+  ina_input_power = ina260.readPower();
   testMotors();
+
+  Serial.print("Current: ");  
+  Serial.print(ina_input_current);  
+  Serial.println(" mA");  
+  Serial.print("Bus Voltage: ");  
+  Serial.print(ina_input_voltage);  
+  Serial.println(" mV");  
+  Serial.print("Power: ");  
+  Serial.print(ina_input_power);  
+  Serial.println(" mW");
+
   receiveEvent();
 }
