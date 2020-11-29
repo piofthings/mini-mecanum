@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import serial
+import picamera
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../libs/smokey")))
@@ -11,16 +12,13 @@ sys.path.append(os.path.abspath(os.path.join(
 from smokey import Smokey
 
 miniMecanum = Smokey()
+frame = 0
 
-miniMecanum.set_speed(64)
-time.sleep(5)
-miniMecanum.set_speed(128)
-time.sleep(5)
-miniMecanum.set_speed(0)
-#miniMecanum.set_direction(-1)
-miniMecanum.set_speed(-64)
-time.sleep(5)
-miniMecanum.set_speed(-128)
-time.sleep(5)
-miniMecanum.set_speed(0)
-
+while True:
+    miniMecanum.set_speed(128)
+    with picamera.PiCamera() as camera:
+        camera.resolution = (100, 100)
+        camera.start_preview()
+        time.sleep(2)
+        name = 'image' + str(frame) + '.data'
+        camera.capture(name, 'yuv')

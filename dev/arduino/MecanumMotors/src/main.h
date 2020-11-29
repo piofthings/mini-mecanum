@@ -5,3 +5,6 @@ const int CMD_SET_SPEED = 1;
 const int CMD_CONFIG_NUM_MOTORS = 90;
 
 #endif
+
+void readPower();
+void writeSerialLog();

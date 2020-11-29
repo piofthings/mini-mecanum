@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "SoftPWMMotorDriver.h"
 #include "SoftwarePWM.h"
 
@@ -60,16 +59,16 @@ void SoftPwmMotorDriver::setSpeed(int16_t speed)
     }
 
     float adj_speed = speed * (_maxMotorVoltage/_currentInputVoltage);
-    Serial.print("Adjusted Speed: ");
-    Serial.println(adj_speed);
-    Serial.println(speed);
-    Serial.println(_maxMotorVoltage);
-    Serial.println(_currentInputVoltage);
+    // Serial.print("Adjusted Speed: ");
+    // Serial.println(adj_speed);
+    // Serial.println(speed);
+    // Serial.println(_maxMotorVoltage);
+    // Serial.println(_currentInputVoltage);
     // Set the speed and direction.
     switch (_mode)
     {
         case PWM_DIR:
-            Serial.print("PWM");
+            //Serial.print("PWM");
             if (speed >= 0)
             {
                 analogWrite(_pin1, (int)adj_speed);
@@ -83,7 +82,7 @@ void SoftPwmMotorDriver::setSpeed(int16_t speed)
             break;
 
         case PWM_SWPM:
-            Serial.print("SWPWM");
+            //Serial.print("SWPWM");
             if (speed >= 0)
             {
                 SoftwarePWMSet(_pin1, (int)(abs(adj_speed)));
