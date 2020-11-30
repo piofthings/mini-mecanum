@@ -14,11 +14,13 @@ from smokey import Smokey
 miniMecanum = Smokey()
 frame = 0
 
-while True:
-    miniMecanum.set_speed(128)
-    with picamera.PiCamera() as camera:
-        camera.resolution = (100, 100)
-        camera.start_preview()
-        time.sleep(2)
+with picamera.PiCamera() as camera:
+    camera.resolution = (128, 128)
+    camera.start_preview()
+    time.sleep(2)
+    while True:
+    #miniMecanum.set_speed(128)
+
         name = 'image' + str(frame) + '.data'
+        frame = frame + 1
         camera.capture(name, 'yuv')
