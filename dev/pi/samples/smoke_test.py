@@ -19,8 +19,7 @@ with picamera.PiCamera() as camera:
     camera.start_preview()
     time.sleep(2)
     while True:
-    #miniMecanum.set_speed(128)
-
+        miniMecanum.set_speed(128)
         name = 'image' + str(frame) + '.data'
         frame = frame + 1
         camera.capture(name, 'yuv')
