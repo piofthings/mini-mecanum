@@ -13,13 +13,15 @@ from smokey import Smokey
 
 miniMecanum = Smokey()
 frame = 0
+folderName = datetime.strptime(str(date), '%Y-%m-%d-%H:%M:%S')
 
 with picamera.PiCamera() as camera:
     camera.resolution = (128, 128)
     camera.start_preview()
     time.sleep(2)
+    miniMecanum.set_speed(128)
     while True:
-        miniMecanum.set_speed(128)
-        name = 'image' + str(frame) + '.data'
+        timestamp = datetime.strptime(str(date), '%H:%M:%S')
+        name = 'captures/' + folderName + '/' + 'image' + timestamp+ '-' + str(frame) + '.data'
         frame = frame + 1
         camera.capture(name, 'yuv')
