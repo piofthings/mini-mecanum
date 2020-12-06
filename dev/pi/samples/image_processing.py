@@ -29,6 +29,8 @@ fheight = 128 #(height + 15) // 16 * 16
 # Load the Y (luminance) data from the stream
 Y = np.fromfile(stream, dtype=np.uint8, count=fwidth*fheight).\
         reshape((fheight, fwidth))
+np.set_printoptions(suppress=True, threshold=fwidth*fheight, linewidth=fwidth*4)
+print(Y)
 # Use dummy UV (chrominance) data for grayscale image
 U = np.ones((fheight, fwidth))
 V = np.ones((fheight, fwidth))
