@@ -37,13 +37,28 @@ class Smokey:
                 self.__ser.write(data.encode('utf-8'))
                 line = self.__ser.readline().decode('utf-8').rstrip()
                 print(line) 
-
+       
         def set_direction(self, direction):
                 data  = "2:" + str(direction) + "\n"
                 print(data.encode('utf-8'))
                 self.__ser.write(data.encode('utf-8'))
                 line = self.__ser.readline().decode('utf-8').rstrip()
                 print(line) 
+
+        def set_speed_LR(self, speedLeft, speedRight):
+                data  = "3:" + str(speedLeft) + "," + str(speedRight) "\n"
+                print(data.encode('utf-8'))
+                self.__ser.write(data.encode('utf-8'))
+                line = self.__ser.readline().decode('utf-8').rstrip()
+                print(line) 
+
+        def set_speed_LfLrRfRr(self, speedLeftFront, speedRight):
+                data  = "3:" + str(speedLeft) + "," + str(speedRight) "\n"
+                print(data.encode('utf-8'))
+                self.__ser.write(data.encode('utf-8'))
+                line = self.__ser.readline().decode('utf-8').rstrip()
+                print(line) 
+
 
 #        def turn(self, turn_factor):
                 # data = [0x3, turn_factor]

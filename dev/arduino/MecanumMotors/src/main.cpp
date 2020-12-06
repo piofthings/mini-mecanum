@@ -23,16 +23,6 @@ SoftPwmMotorDriver motor4(PWM_SWPM, 6, 7, max_voltage_mv, 8400.0);     // PWM 2A
 Adafruit_INA260 ina260 = Adafruit_INA260();
 
 void testMotors() {
-  // Serial.print("ina_input_voltage:");
-  // Serial.println(ina_input_voltage);
-  // motor1.setSpeed(64, ina_input_voltage);    // Motor 1 runs forward at 50% speed.
-  // motor2.setSpeed(64, ina_input_voltage);    // Motor 2 runs backward at 50% speed.
-  // motor3.setSpeed(64, ina_input_voltage);    // Motor 1 runs forward at 50% speed.
-  // motor4.setSpeed(64, ina_input_voltage);    // Motor 2 runs backward at 50% speed.
-  // ina_input_current = ina260.readCurrent();
-  // Serial.print("ina_input_current:");
-  // Serial.println(ina_input_current);
-
   // delay(5000);
   currentSpeed = -255;
   motor1.setSpeed(currentSpeed, ina_input_voltage);   // Motor 1 runs forward at full speed.
@@ -52,14 +42,6 @@ void testMotors() {
   writeSerialLog();
   delay(5000);
 
-  // motor1.setSpeed(-64, ina_input_voltage);   // Motor 1 runs backward at 50% speed.
-  // motor2.setSpeed(-64, ina_input_voltage);   // Motor 2 runs forward at 50% speed.
-  // motor3.setSpeed(-64, ina_input_voltage);   // Motor 1 runs forward at full speed.
-  // motor4.setSpeed(-64, ina_input_voltage);   // Motor 2 runs backward at full speed.
-  // ina_input_current = ina260.readCurrent();
-  // Serial.print("ina_input_current:");
-  // Serial.println(ina_input_current);
-  // delay(5000);
   currentSpeed = 255;
   motor1.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs backward at full speed.
   motor3.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs forward at full speed.
@@ -86,6 +68,13 @@ void setSpeed(int speed){
   motor3.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
   motor2.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
   motor4.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+}
+
+void setLRSpeed(int speedLeft, int speedRight){
+  motor1.setSpeed(speedRight, ina_input_voltage);
+  motor2.setSpeed(speedRight, ina_input_voltage);
+  motor3.setSpeed(speedLeft, ina_input_voltage);
+  motor4.setSpeed(speedLeft, ina_input_voltage);
 }
 
 void setDirection(int direction){
@@ -120,15 +109,30 @@ void receiveEvent() {
         Serial1.println(d);
         setDirection(direction);
         break;
-      case 3: // Set Turnfactor
+      case 3: // Set L-R Speed
+        String sl = Serial1.readStringUntil(',');
+        int speedLeft = sl.toInt();
+        String sr = Serial1.readStringUntil('\n');
+        int speedRight = sr.toInt();
+        setLRSpeed(speedLeft, speedRight);
+        Serial1.print("Speed Set: ");
+        Serial1.print(speedLeft);
+        Serial1.print(", ");
+        Serial1.println(speedRight);
         break;
       case 4:
+          Serial1.print(ina_input_current);  
+          Serial1.print(", ");  
+          Serial1.print(ina_input_voltage);  
+          Serial1.print(", ");  
+          Serial1.print(ina_input_power);  
+          Serial1.print(", ");
+          Serial1.println(currentSpeed);  
         break;
 
     }
   }
   digitalWrite(LED_BUILTIN, LOW);
-  motor3.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
 
 }
 
@@ -174,5 +178,4 @@ void writeSerialLog() {
   Serial.print(ina_input_power);  
   Serial.print(", ");
   Serial.println(currentSpeed);  
-
 }
