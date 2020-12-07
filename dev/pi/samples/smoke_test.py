@@ -14,26 +14,46 @@ sys.path.append(os.path.abspath(os.path.join(
 from smokey import Smokey
 
 
-miniMecanum = Smokey()
-frame = 0
-date = datetime.now()
-folderName = 'captures/' + date.strftime('%Y-%m-%d-%H-%M-%S')
-if not os.path.exists(folderName):
-    os.makedirs(folderName)
+def class Smokey():
+    __frame = 0
+    __mem_buffer = np.empty((32, 32, 3), dtype=np.uint8)
 
-def cleanup():
-    miniMecanum.set_speed(0)
+    def __init__(self):
+        #Constructor
+        atexit.register(self.cleanup)
 
-atexit.register(cleanup)
-
-with picamera.PiCamera() as camera:
-    camera.resolution = (128, 128)
-    camera.start_preview()
-    time.sleep(2)
-    miniMecanum.set_speed(-128)
-    while True:
+    def garden_path(self):
+        miniMecanum = Smokey()
         date = datetime.now()
-        timestamp = date.strftime('%H-%M-%S')
-        name = folderName + '/' + 'image' + timestamp + '-' + str(frame) + '.data'
-        frame = frame + 1
-        camera.capture(name, 'yuv')
+
+
+        with picamera.PiCamera() as camera:
+            camera.resolution = (32, 32)
+            camera.start_preview()
+            time.sleep(2)
+            miniMecanum.set_speed(128)
+            date = datetime.now()
+            
+            print(date.strftime('%H-%M-%S-%f')[:-3])
+            while True:
+                frame = frame + 1
+                output = np.empty((32, 32, 3), dtype=np.uint8)
+                camera.capture(output, 'yuv')
+                np.vstack((self.__mem_buffer,output))
+
+
+    def cleanup(self):
+        miniMecanum.set_speed(0)
+        print(self.__frame)
+        print(date.strftime('%H-%M-%S-%f')[:-3])
+        try:
+            fileName = 'captures/' + date.strftime('%Y-%m-%d-%H-%M-%S')
+            if not os.path.exists(folderName):
+                os.makedirs(folderName)
+            np.save(folderName + "/" + date.strftime('%H-%M-%S-%f')[:-3], self.__mem_buffer)
+        except:
+            print("Save failed")
+
+
+if __name__ == '__main__':
+    smokey = Smokey()

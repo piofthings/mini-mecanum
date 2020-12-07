@@ -14,10 +14,10 @@ float ina_input_current = 0;
 float ina_input_power = 0;
 
 // Configure the motor driver.
-SoftPwmMotorDriver motor1(PWM_SWPM, 16, 10, max_voltage_mv, 8400.0);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
-SoftPwmMotorDriver motor2(PWM_SWPM, 9, 8, max_voltage_mv, 8400.0);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
-SoftPwmMotorDriver motor3(PWM_SWPM, 4, 5, max_voltage_mv, 8400.0);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
-SoftPwmMotorDriver motor4(PWM_SWPM, 6, 7, max_voltage_mv, 8400.0);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
+SoftPwmMotorDriver motor1Rf(PWM_SWPM, 16, 10, max_voltage_mv, 8400.0);   // PWM 1A = Pin 10, PWM 1B = Pin 16.
+SoftPwmMotorDriver motor2Rr(PWM_SWPM, 9, 8, max_voltage_mv, 8400.0);     // PWM 2A = Pin 9, PWM 2B = Pin 8.
+SoftPwmMotorDriver motor3Lf(PWM_SWPM, 4, 5, max_voltage_mv, 8400.0);     // PWM 1A = Pin 5, PWM 1B = Pin 4.
+SoftPwmMotorDriver motor4Lr(PWM_SWPM, 6, 7, max_voltage_mv, 8400.0);     // PWM 2A = Pin 6, PWM 2B = Pin 7.
 
 
 Adafruit_INA260 ina260 = Adafruit_INA260();
@@ -25,37 +25,37 @@ Adafruit_INA260 ina260 = Adafruit_INA260();
 void testMotors() {
   // delay(5000);
   currentSpeed = -255;
-  motor1.setSpeed(currentSpeed, ina_input_voltage);   // Motor 1 runs forward at full speed.
-  motor3.setSpeed(currentSpeed, ina_input_voltage);   // Motor 1 runs forward at full speed.
-  motor2.setSpeed(currentSpeed, ina_input_voltage);   // Motor 2 runs backward at full speed.
-  motor4.setSpeed(currentSpeed, ina_input_voltage);   // Motor 2 runs backnward at full speed.
+  motor1Rf.setSpeed(currentSpeed, ina_input_voltage);   // Motor 1 runs forward at full speed.
+  motor3Lf.setSpeed(currentSpeed, ina_input_voltage);   // Motor 1 runs forward at full speed.
+  motor2Rr.setSpeed(currentSpeed, ina_input_voltage);   // Motor 2 runs backward at full speed.
+  motor4Lr.setSpeed(currentSpeed, ina_input_voltage);   // Motor 2 runs backnward at full speed.
   readPower();
   writeSerialLog();
   delay(5000);
 
   currentSpeed = 0;
-  motor1.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 stops.
-  motor3.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 runs forward at full speed.
-  motor2.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 stops.
-  motor4.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 runs backward at full speed.
+  motor1Rf.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 stops.
+  motor3Lf.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 runs forward at full speed.
+  motor2Rr.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 stops.
+  motor4Lr.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 runs backward at full speed.
   readPower();
   writeSerialLog();
   delay(5000);
 
   currentSpeed = 255;
-  motor1.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs backward at full speed.
-  motor3.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs forward at full speed.
-  motor2.setSpeed(currentSpeed, ina_input_voltage);    // Motor 2 runs forward at full speed.
-  motor4.setSpeed(currentSpeed, ina_input_voltage);    // Motor 2 runs backward at full speed.
+  motor1Rf.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs backward at full speed.
+  motor3Lf.setSpeed(currentSpeed, ina_input_voltage);    // Motor 1 runs forward at full speed.
+  motor2Rr.setSpeed(currentSpeed, ina_input_voltage);    // Motor 2 runs forward at full speed.
+  motor4Lr.setSpeed(currentSpeed, ina_input_voltage);    // Motor 2 runs backward at full speed.
   readPower();
   writeSerialLog();
   delay(5000);
 
   currentSpeed = 0;
-  motor1.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 stops.
-  motor3.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 runs forward at full speed.
-  motor2.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 stops.
-  motor4.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 runs backward at full speed.
+  motor1Rf.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 stops.
+  motor3Lf.setSpeed(currentSpeed, ina_input_voltage);     // Motor 1 runs forward at full speed.
+  motor2Rr.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 stops.
+  motor4Lr.setSpeed(currentSpeed, ina_input_voltage);     // Motor 2 runs backward at full speed.
   readPower();
   writeSerialLog();
   delay(5000);
@@ -64,17 +64,24 @@ void testMotors() {
 
 void setSpeed(int speed){
   currentSpeed = speed;
-  motor1.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
-  motor3.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
-  motor2.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
-  motor4.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor1Rf.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor3Lf.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor2Rr.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
+  motor4Lr.setSpeed(currentSpeed * currentDirection, ina_input_voltage);
 }
 
 void setLRSpeed(int speedLeft, int speedRight){
-  motor1.setSpeed(speedRight, ina_input_voltage);
-  motor2.setSpeed(speedRight, ina_input_voltage);
-  motor3.setSpeed(speedLeft, ina_input_voltage);
-  motor4.setSpeed(speedLeft, ina_input_voltage);
+  motor1Rf.setSpeed(speedRight, ina_input_voltage);
+  motor2Rr.setSpeed(speedRight, ina_input_voltage);
+  motor3Lf.setSpeed(speedLeft, ina_input_voltage);
+  motor4Lr.setSpeed(speedLeft, ina_input_voltage);
+}
+
+void setLfLrRfRrSpeed(int speedLeftFront, int speedLeftRear, int speedRightFront, int speedRightRear){
+  motor1Rf.setSpeed(speedRightFront, ina_input_voltage);
+  motor2Rr.setSpeed(speedRightRear, ina_input_voltage);
+  motor3Lf.setSpeed(speedLeftFront, ina_input_voltage);
+  motor4Lr.setSpeed(speedLeftRear, ina_input_voltage);
 }
 
 void setDirection(int direction){
@@ -120,7 +127,22 @@ void receiveEvent() {
         Serial1.print(", ");
         Serial1.println(speedRight);
         break;
-      case 4:
+      case 4: // Set Lf-Lr-Rf-Rr Speed
+        String slf = Serial1.readStringUntil(',');
+        int speedLeftFront = slf.toInt();
+        String slr = Serial1.readStringUntil(',');
+        int speedLeftRight = slr.toInt();
+        String srf = Serial1.readStringUntil(',');
+        int speedRightFront = srf.toInt();
+        String srr = Serial1.readStringUntil('\n');
+        int speedRightRear = srr.toInt();
+        setLRSpeed(speedLeft, speedRight);
+        Serial1.print("Speed Set: ");
+        Serial1.print(speedLeft);
+        Serial1.print(", ");
+        Serial1.println(speedRight);
+        break;
+      case 5: // Get Last Power readings
           Serial1.print(ina_input_current);  
           Serial1.print(", ");  
           Serial1.print(ina_input_voltage);  

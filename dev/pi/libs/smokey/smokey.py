@@ -46,14 +46,14 @@ class Smokey:
                 print(line) 
 
         def set_speed_LR(self, speedLeft, speedRight):
-                data  = "3:" + str(speedLeft) + "," + str(speedRight) "\n"
+                data  = "3:" + str(speedLeft) + "," + str(speedRight) + "\n"
                 print(data.encode('utf-8'))
                 self.__ser.write(data.encode('utf-8'))
                 line = self.__ser.readline().decode('utf-8').rstrip()
                 print(line) 
 
-        def set_speed_LfLrRfRr(self, speedLeftFront, speedRight):
-                data  = "3:" + str(speedLeft) + "," + str(speedRight) "\n"
+        def set_speed_LfLrRfRr(self, speedLeftFront, speedLeftRear, speedRightFront, speedRightRear):
+                data  = "4:" + str(speedLeftFront) + "," + str(speedLeftRear)+ "," + str(speedRightFront)+ "," + str(speedRightRear) + "\n"
                 print(data.encode('utf-8'))
                 self.__ser.write(data.encode('utf-8'))
                 line = self.__ser.readline().decode('utf-8').rstrip()

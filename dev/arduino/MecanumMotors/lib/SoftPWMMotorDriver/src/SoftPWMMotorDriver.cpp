@@ -85,13 +85,13 @@ void SoftPwmMotorDriver::setSpeed(int16_t speed)
             //Serial.print("SWPWM");
             if (speed >= 0)
             {
-                SoftwarePWMSet(_pin1, (int)(abs(adj_speed)));
-                SoftwarePWMSet(_pin2, 0);
+                SoftwarePWMSet(_pin1, 0);
+                SoftwarePWMSet(_pin2, (int)(abs(adj_speed)));
             }
             else
             {
-                SoftwarePWMSet(_pin1, 0);
-                SoftwarePWMSet(_pin2, (int)(abs(adj_speed)));
+                SoftwarePWMSet(_pin1, (int)(abs(adj_speed)));
+                SoftwarePWMSet(_pin2, 0);
             }
             break;
     }
