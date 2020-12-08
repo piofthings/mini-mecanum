@@ -36,13 +36,13 @@ class Thresholding:
                         diff = row[brightest] - row[darkest]
                         c=0
                         for pixel in row:
-                        if stretch_contrast:
-                                pixel = (pixel - row[darkest]) * (255 /diff)
-                        if pixel < 136:
-                                thresholded[r,c] = 1
-                        else:
-                                thresholded[r,c] = 255
-                        c = c+1
+                         if stretch_contrast:
+                          pixel = (pixel - row[darkest]) * (255 /diff)
+                         if pixel < 136:
+                          thresholded[r,c] = 1
+                         else:
+                           thresholded[r,c] = 255
+                         c = c+1
                         r = r+1
                 return thresholded
 

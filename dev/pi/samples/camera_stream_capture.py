@@ -15,14 +15,18 @@ class MyColorAnalyzer(PiYUVAnalysis):
 		super(MyColorAnalyzer, self).__init__(camera)
 		self.last_color = ''
 		self.threshold = Thresholding(32,32)
+		self.count = 0
 
 	def analyze(self, a):
 		# Convert the average color of the pixels in the middle box
 		np.set_printoptions(threshold=sys.maxsize, linewidth=1000)
-		#print(a)
-		Y = np.dsplit(a, 1).reshape(32,32)
+		Y = np.dsplit(a, 3)
+		Y = np.array(Y[0], dtype=np.uint8).reshape(32,32)
+		print(self.count)
+		self.count = self.count + 1
+#		print(Y.size)
 		y_thresholded = self.threshold.with_np_array(Y, True)
-		print(y_thresholded)
+#		print(y_thresholded)
 
 with picamera.PiCamera(resolution='32x32', framerate=24) as camera:
 	# Fix the camera's white-balance gains
@@ -39,8 +43,9 @@ with picamera.PiCamera(resolution='32x32', framerate=24) as camera:
 		try:
 			i = 0
 			while i < 1:
-				camera.wait_recordin	(1)
-				i = i + 	
+				camera.wait_recording(1)
+				i = i + 1
 			camera.stop_recording()
 		finally:
-			camera.stop_recording()	
+			pass
+#			camera.stop_recording()
