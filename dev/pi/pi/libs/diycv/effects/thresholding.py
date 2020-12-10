@@ -30,17 +30,15 @@ class Thresholding:
                 thresholded = np.arange(y_height * y_width).reshape(y_height, y_width)
                 r = 0 
                 c = 0
-                for r in range(0, y_height): # y_array:
+                for row in y_array:
                         if stretch_contrast:
-                                row = y_array[r]
-                                darkest = np.min(row) #.argmin()
-                                brightest = np.max(row) #.argmax()
-                                diff = brightest - darkest #row[brightest] - row[darkest]
+                                darkest = row.argmin()
+                                brightest = row.argmax()
+                                diff = row[brightest] - row[darkest]
                         c=0
-                        for c in range(0, y_width): #pixel in row:
-                                pixel = y_array[r,c]
+                        for pixel in row:
                                 if stretch_contrast:
-                                        pixel = (pixel - darkest) * (255 /diff)
+                                        pixel = (pixel - row[darkest]) * (255 /diff)
                                 if pixel < 136:
                                         thresholded[r,c] = 1
                                 else:

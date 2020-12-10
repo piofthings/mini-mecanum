@@ -6,7 +6,6 @@ import numpy as np
 import picamera
 import sys
 import os
-import warnings
 from timeit import default_timer as timer
 
 sys.path.append(os.path.abspath(os.path.join(
@@ -74,18 +73,23 @@ class MyColorAnalyzer(MyPiYUVAnalysis):
 
 
 np.set_printoptions(threshold=sys.maxsize, linewidth=1000)
-warnings.filterwarnings('error', category=DeprecationWarning)
 
-with picamera.PiCamera(resolution='32x32', framerate=90) as camera:
+with picamera.PiCamera(resolution='32x32', framerate=24) as camera:
     # Fix the camera's white-balance gains
     camera.awb_mode = 'off'
     camera.awb_gains = (1.4, 1.5)
+    # # Draw a box over the area we're going to watch
+    # camera.start_preview(alpha=128)
+    # box = np.zeros((96, 160, 3), dtype=np.uint8)
+    # box[30:60, 60:120, :] = 0x80
+    # camera.add_overlay(memoryview(box), size=(160, 90), layer=3, alpha=64)
+    # # Construct the analysis output and start recording data to it
     with MyColorAnalyzer(camera) as analyzer:
         camera.start_recording(analyzer, 'yuv')
         try:
             i = 0            
             start = timer()
-            camera.wait_recording(100)
+            camera.wait_recording(1)
 
             while i < 1:
                 end = timer()
