@@ -7,14 +7,10 @@ import time
 from timeit import default_timer as timer
 from datetime import datetime
 
-sys.path.append(os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "../libs")))
-
-from diycv.effects.thresholding import Thresholding
-
-class LineDetector():
-    def __init__(self):
-        pass
+class CaptureThreshold():
+    __frame_processor_queue = None
+    def __init__(self, queue):
+        self.__frame_processor_queue = queue
 
     def write_pgm(self, filename, w, h, data):
         with open(filename, 'wb') as f:
@@ -54,6 +50,11 @@ class LineDetector():
                         row[x] = val
                     x = x + 1
                 y = y + 1
+            if self.__frame_processor_queue  != None:
+                clone = bytearray(b'\0' * (width * (height*2)))
+                clone[:] = data
+                self.__frame_processor_queue.put(clone, block=False, timeout=0.5)
+
 
     def start_capture(self, width, height, threshold, stretch, save):
         with picamera.PiCamera(resolution='{:d}x{:d}'.format(width, height), framerate=30) as camera:
