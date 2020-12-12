@@ -23,30 +23,47 @@ class Thresholding:
                         reshape((self.__height, self.__width))
                 return self.with_np_array(Y, stretch_contrast)
 
+        def min_max(self, row, row_width):
+                min = row[0]
+                max = row[0]
+                for r in range(1, row_width):
+                        c = row[r]
+                        if(c < min):
+                                min = c
+                        if(c > max):
+                                max = c
+
+                return (min, max)
+
+
         def with_np_array(self, y_array, stretch_contrast=False):
                 #np.set_printoptions(threshold=sys.maxsize, linewidth=1000) 
 
                 (y_height, y_width) = y_array.shape
-                thresholded = np.arange(y_height * y_width).reshape(y_height, y_width)
+                thresholded = np.empty((y_height, y_width), dtype=np.uint8)
                 r = 0 
                 c = 0
+                ratio = 1
                 for r in range(0, y_height): # y_array:
                         if stretch_contrast:
                                 row = y_array[r]
-                                darkest = np.min(row) #.argmin()
-                                brightest = np.max(row) #.argmax()
+                                (darkest, brightest) = self.min_max(row, y_width)
+                                #darkest = np.min(row) #.argmin()
+                                #brightest = np.max(row) #.argmax()
                                 diff = brightest - darkest #row[brightest] - row[darkest]
+                                ratio = int(255/diff)
+
                         c=0
                         for c in range(0, y_width): #pixel in row:
                                 pixel = y_array[r,c]
                                 if stretch_contrast:
-                                        pixel = (pixel - darkest) * (255 /diff)
+                                        pixel = (pixel - darkest) * ratio
                                 if pixel < 136:
                                         thresholded[r,c] = 1
                                 else:
                                         thresholded[r,c] = 255
-                                c = c+1
-                        r = r+1
+#                                c = c+1
+                        #r = r+1
                 return thresholded
 
         def get_rgb_grayscale(self, stream):
