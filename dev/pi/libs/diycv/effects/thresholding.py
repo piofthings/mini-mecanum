@@ -62,8 +62,6 @@ class Thresholding:
                                         thresholded[r,c] = 1
                                 else:
                                         thresholded[r,c] = 255
-#                                c = c+1
-                        #r = r+1
                 return thresholded
 
         def get_rgb_grayscale(self, stream):

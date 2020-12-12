@@ -1,81 +1,99 @@
 #!/usr/bin/env python3
-from picamera.array import PiAnalysisOutput
-from picamera.color import Color
-from picamera.array import PiYUVAnalysis
-import numpy as np
 import picamera
 import sys
 import os
 import warnings
+import time
 from timeit import default_timer as timer
+from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../libs")))
 
 from diycv.effects.thresholding import Thresholding
 
-class GreyScaleYUVAnalysis(PiAnalysisOutput):
-    def write(self, b):
-        super(GreyScaleYUVAnalysis, self).write(b)
-        return self.analyze(self.bytes_to_yuv_raw(b, self.size or self.camera.resolution))
-        return result
+class LineDetector():
+    def __init__(self):
+        pass
 
-    def raw_resolution(self, resolution, splitter=False):
-        width, height = resolution
-        if splitter:
-            fwidth = (width + 15) & ~15
-        else:
-            fwidth = (width + 31) & ~31
-        fheight = (height + 15) & ~15
-        return fwidth, fheight
+    def write_pgm(self, filename, w, h, data):
+        with open(filename, 'wb') as f:
+            f.write("P5\n{:d} {:d}\n255\n".format(w, h).encode('utf8'))
+            f.write(data)
 
-    def bytes_to_yuv_raw(self, data, resolution):
-        width, height = resolution
-        fwidth, fheight = self.raw_resolution(resolution)
-        y_len = fwidth * fheight
-        # Separate out the Y only we discard the UV for greyscale analysis
-        a = np.frombuffer(data, dtype=np.uint8)
-        Y = a[:y_len].reshape((fheight, fwidth))
-        return Y
+    def process_bytearray(self, data, w, h, stretch=True, thresh=True):
+        if stretch:
+            y = 0
+            while y < h:
+                row = memoryview(data)[y*w:(y+1)*w]
+                minval = 255
+                maxval = 0
 
+                for val in row:
+                    if val < minval:
+                        minval = val
+                    if val > maxval:
+                        maxval = val
 
-class LineAnalyser(GreyScaleYUVAnalysis):
-    def __init__(self, camera):
-        super(LineAnalyser, self).__init__(camera)
-        self.last_color = ''
-        self.threshold = Thresholding(32, 32)
-        self.count = 0
+                diff = maxval - minval
 
-    def analyze(self, a):
-        Y = a
-        print(self.count)
-        self.count = self.count + 1
-#		print(Y.size)
-        y_thresholded = self.threshold.with_np_array(Y, True)
-#        print(y_thresholded)
+                factor = 1
+                if diff != 0:
+                    factor = 255/diff
 
+                x = 0
+                for val in row:
+                    val = int((val - minval) * factor)
+                    if thresh:
+                        if val > 128:
+                            val = 255
+                        else:
+                            val = 0
+                        row[x] = val
+                    else:
+                        row[x] = val
+                    x = x + 1
+                y = y + 1
 
-np.set_printoptions(threshold=sys.maxsize, linewidth=1000)
-warnings.filterwarnings('error', category=DeprecationWarning)
+    def start_capture(self, width, height, threshold, stretch, save):
+        with picamera.PiCamera(resolution='{:d}x{:d}'.format(width, height), framerate=30) as camera:
+            data = bytearray(b'\0' * (width * (height*2)))
 
-with picamera.PiCamera(resolution='32x32', framerate=30) as camera:
-    # Fix the camera's white-balance gains
-    camera.awb_mode = 'off'
-    camera.awb_gains = (1.4, 1.5)
-    with LineAnalyser(camera) as analyzer:
-        camera.start_recording(analyzer, 'yuv')
-        try:
-            i = 0            
+            camera.start_preview()
+            # Wait for 3s to settle
+            time.sleep(3)
             start = timer()
-            camera.wait_recording(1)
+            prev = start
+            i = 0
+            folderName = "captures/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+            if not os.path.exists(folderName):
+                os.makedirs(folderName)
 
-            while i < 1:
-                end = timer()
-                if(end - start > 1) :
-                    i = 1
-            camera.stop_recording()
-        finally:
-            pass
-#			camera.stop_recording()
+            for foo in camera.capture_continuous(data, 'yuv', use_video_port=True):
+                i = i + 1
+
+                if save:
+                    # Save original
+                    self.write_pgm("{:s}/out_{:d}.pgm".format(folderName, i), width, height, data)
+
+                proc_start = timer()
+                self.process_bytearray(data, width, height, stretch=stretch, thresh=threshold)
+                proc_time = timer() - proc_start
+
+                if save:
+                    # Save result
+                    self.write_pgm("{:s}/out_proc_{:d}.pgm".format(folderName, i), width, height, data)
+
+                now = timer()
+                t = now - prev
+                #print("Frame time: {}, processing took: {}".format(t, proc_time))
+                prev = now
+
+                if now - start > 3:
+                    print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
+                    camera.stop_preview()
+                    exit(0)
 
 
+lineDetector = LineDetector()
+lineDetector.start_capture(32,32, True, True, True)
