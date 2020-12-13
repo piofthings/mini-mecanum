@@ -20,6 +20,7 @@ class CaptureThreshold():
     def process_bytearray(self, data, w, h, stretch=True, thresh=True):
         if stretch:
             y = 0
+            out = []
             while y < h:
                 row = memoryview(data)[y*w:(y+1)*w]
                 minval = 255
@@ -50,10 +51,9 @@ class CaptureThreshold():
                         row[x] = val
                     x = x + 1
                 y = y + 1
+                out.append(row.tolist())
             if self.__frame_processor_queue  != None:
-                clone = bytearray(b'\0' * (width * (height*2)))
-                clone[:] = data
-                self.__frame_processor_queue.put(clone, block=False, timeout=0.5)
+                self.__frame_processor_queue.put(out, block=False, timeout=0.5)
 
 
     def start_capture(self, width, height, threshold, stretch, save):
@@ -90,11 +90,15 @@ class CaptureThreshold():
                 #print("Frame time: {}, processing took: {}".format(t, proc_time))
                 prev = now
 
-                if now - start > 3:
+                if now - start > 1:
                     print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
-                    camera.stop_preview()
-                    exit(0)
+
+    def stop_capture(self):
+        camera.stop_preview()
+        exit(0)
 
 
-lineDetector = LineDetector()
-lineDetector.start_capture(32,32, True, True, True)
+if __name__ == '__main__':
+    lineDetector = CaptureThreshold()
+    lineDetector.start_capture(32,32, True, True, True)
+    timer.suspend(3)
