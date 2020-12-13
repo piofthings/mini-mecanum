@@ -89,60 +89,86 @@ void setDirection(int direction){
   setSpeed(currentSpeed);
 }
 
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
+
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 
 void receiveEvent() {
   if (Serial1.available() > 0) {
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
 
-    String c = Serial1.readStringUntil(':');
+    String cInput = Serial1.readStringUntil('\n');
+    Serial.println(cInput);
+    String c = getValue(cInput, ':', 0);
+    String speeds = getValue(cInput, ':', 1);
     int command = c.toInt();
  
-    Serial1.print("Command: ");
-    Serial1.println(c);
+    Serial.print("\nCommand: ");
+    Serial.println(command);
+    Serial.println(speeds);
 
     switch (command)
     {
       case 1: // Set Speed
+      {
         String s = Serial1.readStringUntil('\n');
         int speed = s.toInt();
         setSpeed(speed);
-        Serial1.print("Speed: ");
-        Serial1.println(speed);
+        Serial.print("\nSpeed: ");
+        Serial.println(speed);
         break;
+      }
       case 2: // Set Direction
-        String d = Serial1.readStringUntil('\n');
+      {
+        String d = Serial.readStringUntil('\n');
         int direction = d.toInt();
-        Serial1.print("Direction: ");
-        Serial1.println(d);
+        Serial.print("\nDirection: ");
+        Serial.println(d);
         setDirection(direction);
         break;
+      }
       case 3: // Set L-R Speed
-        String sl = Serial1.readStringUntil(',');
+      {
+        Serial.println("Case 3");
+        String sl = getValue(speeds, ',', 0);
         int speedLeft = sl.toInt();
-        String sr = Serial1.readStringUntil('\n');
+        String sr = getValue(speeds, ',', 1);
         int speedRight = sr.toInt();
         setLRSpeed(speedLeft, speedRight);
-        Serial1.print("Speed Set: ");
-        Serial1.print(speedLeft);
-        Serial1.print(", ");
-        Serial1.println(speedRight);
+        Serial.print("\nSpeed Set: ");
+        Serial.print(speedLeft);
+        Serial.print(", ");
+        Serial.println(speedRight);
         break;
+      }
       case 4: // Set Lf-Lr-Rf-Rr Speed
-        String slf = Serial1.readStringUntil(',');
+      {
+        String slf = getValue(speeds, ',', 0);
         int speedLeftFront = slf.toInt();
-        String slr = Serial1.readStringUntil(',');
+        String slr = SgetValue(speeds, ',', 1);
         int speedLeftRight = slr.toInt();
-        String srf = Serial1.readStringUntil(',');
+        String srf = getValue(speeds, ',', 2);
         int speedRightFront = srf.toInt();
-        String srr = Serial1.readStringUntil('\n');
+        String srr = getValue(speeds, ',', 4);;
         int speedRightRear = srr.toInt();
-        setLRSpeed(speedLeft, speedRight);
-        Serial1.print("Speed Set: ");
-        Serial1.print(speedLeft);
-        Serial1.print(", ");
-        Serial1.println(speedRight);
+        setLfLrRfRrSpeed(slf,slr,srf,srr);
         break;
+      }
       case 5: // Get Last Power readings
+      {
           Serial1.print(ina_input_current);  
           Serial1.print(", ");  
           Serial1.print(ina_input_voltage);  
@@ -151,7 +177,7 @@ void receiveEvent() {
           Serial1.print(", ");
           Serial1.println(currentSpeed);  
         break;
-
+      }
     }
   }
   digitalWrite(LED_BUILTIN, LOW);
@@ -182,7 +208,7 @@ void setup() {
 void loop() {
   readPower();
   //testMotors();
-  writeSerialLog();
+  //writeSerialLog();
   receiveEvent();
 }
 
