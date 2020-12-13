@@ -19,15 +19,14 @@ class CaptureThreshold():
             f.write("P5\n{:d} {:d}\n255\n".format(w, h).encode('utf8'))
             f.write(data)
 
-    def process_bytearray(self, data, w, h, stretch=True, thresh=True):
-        if stretch:
-            y = 0
-            out = []
-            while y < h:
-                row = memoryview(data)[y*w:(y+1)*w]
+    def process_bytearray(self, data, w, h, thresh=True, stretch=True):
+        y = 0
+        out = []
+        while y < h:
+            row = memoryview(data)[y*w:(y+1)*w]
+            if stretch:
                 minval = 255
                 maxval = 0
-
                 for val in row:
                     if val < minval:
                         minval = val
@@ -40,22 +39,23 @@ class CaptureThreshold():
                 if diff != 0:
                     factor = 255/diff
 
-                x = 0
-                for val in row:
+            x = 0
+            for val in row:
+                if stretch:
                     val = int((val - minval) * factor)
-                    if thresh:
-                        if val > 128:
-                            val = 255
-                        else:
-                            val = 0
-                        row[x] = val
+                if thresh:
+                    if val > 128:
+                        val = 255
                     else:
-                        row[x] = val
-                    x = x + 1
-                y = y + 1
-                out.append(row.tolist())
-            if self.__frame_processor_queue  != None:
-                self.__frame_processor_queue.put(out, block=False, timeout=0.5)
+                        val = 0
+                    row[x] = val
+                else:
+                    row[x] = val
+                x = x + 1
+            y = y + 1
+            out.append(row.tolist())
+        if self.__frame_processor_queue  != None:
+            self.__frame_processor_queue.put(out, block=False, timeout=0.5)
 
 
     def start_capture(self, width, height, threshold, stretch, save):
@@ -68,24 +68,25 @@ class CaptureThreshold():
         start = timer()
         prev = start
         i = 0
+        total = 0
         folderName = "captures/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         if not os.path.exists(folderName):
             os.makedirs(folderName)
 
         for foo in self.__camera.capture_continuous(data, 'yuv', use_video_port=True):
             i = i + 1
-
+            total = total + 1
             if save:
                 # Save original
-                self.write_pgm("{:s}/out_{:d}.pgm".format(folderName, i), width, height, data)
+                self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, total), width, height, data)
 
             proc_start = timer()
-            self.process_bytearray(data, width, height, stretch=stretch, thresh=threshold)
+            self.process_bytearray(data, width, height, threshold, stretch)
             proc_time = timer() - proc_start
 
             if save:
                 # Save result
-                self.write_pgm("{:s}/out_proc_{:d}.pgm".format(folderName, i), width, height, data)
+                self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, total), width, height, data)
 
             now = timer()
             t = now - prev

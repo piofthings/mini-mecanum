@@ -25,6 +25,7 @@ class Main():
     def __init__(self, challenge):
         self.__challenge = challenge
         self.__captureThresholder = CaptureThreshold(self.__command_queue)
+        atexit.register(self.cleanup)
 
     def worker(self):
         while True:
@@ -35,8 +36,7 @@ class Main():
             last_white_pos = 0
             current_pos_white = False
             prev_post_white = False
-            for pos in range(0, 15):
-
+            for pos in range(0,31):
                 if item[15][pos] == 255:
                     if first_white_pos == 0:
                         first_white_pos = pos
@@ -46,9 +46,9 @@ class Main():
                 else:
                     prev_post_white = current_pos_white
                     current_pos_white = False
-            thickness = last_white_pos - first_white_pos
+            thickness = last_white_pos - first_white_pos + 1
             if  thickness > 2 and thickness < 6:
-                speed = 255
+                speed = 200
                 #good thickness
                 ideal_center = 8 - (thickness/2)
                 ratio = ideal_center/first_white_pos
@@ -62,25 +62,37 @@ class Main():
                     self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
                 #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
             else:
-                speed = 128
+                speed = 0
                 self.__miniMecanum.set_speed_LR(speed, speed)
+                print(item[15])
+            print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
+
             self.__command_queue.task_done()
 
     def start(self):
         threading.Thread(target=self.worker, daemon=True).start()
-        self.__captureThresholder.start_capture(32,32,True, True, True)
-        
+        thresholdEnable = True
+        stretchEnable = False
+        self.__miniMecanum.get_power_stats()
+        self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)        
         while True:
             pass
             
 
     def cleanup(self):
         try:
-            self.__miniMecanum.set_speed(0)
+            #self.__command_queue.join()
             self.__captureThresholder.stop_capture()
+            time.sleep(1)
+            self.__miniMecanum.set_speed(0)
+            self.__miniMecanum.get_power_stats()
+            self.__miniMecanum.set_speed(0)
         except:
             print("Save failed")
 
 if __name__ == '__main__':
     main = Main("garden_path")
-    main.start()
+    try:
+        main.start()
+    except:
+        exit(0)

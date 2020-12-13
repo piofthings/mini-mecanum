@@ -31,6 +31,7 @@ class SmokeyTest:
     def cleanup(self):
         try:
             self.__miniMecanum.set_speed(0)
+            self.__miniMecanum.get_power_stats()
             print(self.__frame)
             print(date.strftime('%H-%M-%S-%f')[:-3])
 
@@ -45,5 +46,6 @@ class SmokeyTest:
 if __name__ == '__main__':
     smokey = SmokeyTest()
     smokey.garden_path()
+    
     while True:
         pass

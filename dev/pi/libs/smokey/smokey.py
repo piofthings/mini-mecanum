@@ -59,6 +59,15 @@ class Smokey:
                 line = self.__ser.readline().decode('utf-8').rstrip()
                 print(line) 
 
+        def get_power_stats(self):
+                data  = "5:0\n"
+                print(data.encode('utf-8'))
+                self.__ser.write(data.encode('utf-8'))
+                line = self.__ser.readline().decode('utf-8').rstrip()
+                print(line) 
+                return line
+
+
 
 #        def turn(self, turn_factor):
                 # data = [0x3, turn_factor]
