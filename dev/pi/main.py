@@ -36,6 +36,7 @@ class Main():
             last_white_pos = 0
             current_pos_white = False
             prev_post_white = False
+            speed = 0
             for pos in range(0,31):
                 if item[15][pos] == 255:
                     if first_white_pos == 0:
@@ -47,7 +48,7 @@ class Main():
                     prev_post_white = current_pos_white
                     current_pos_white = False
             thickness = last_white_pos - first_white_pos + 1
-            if  thickness > 2 and thickness < 6:
+            if  thickness > 1 and thickness < 6:
                 speed = 200
                 #good thickness
                 ideal_center = 8 - (thickness/2)
@@ -64,8 +65,8 @@ class Main():
             else:
                 speed = 0
                 self.__miniMecanum.set_speed_LR(speed, speed)
-                print(item[15])
-            print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
+                #print(item[15])
+            print("{:d},{:d},{:d},{:d},".format(thickness, first_white_pos, last_white_pos, speed) + str(item[15]))
 
             self.__command_queue.task_done()
 
