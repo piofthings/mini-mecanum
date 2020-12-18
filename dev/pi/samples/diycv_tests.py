@@ -1,3 +1,9 @@
+"""
+    This sample is nearly straight from PiCamera examples, it uses Numpy like suggested
+    but it is very slow on a single core Pi like the PiZero. You won't get more than 
+    3-5 FPS with thresholding and contrast stretching. Max about 10fps without contrast stretching
+"""
+
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont

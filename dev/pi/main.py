@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import picamera
 import sys
 import os
 import warnings
@@ -11,8 +10,9 @@ import threading, queue
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "./libs")))
-    
+
 from diycv.camera.capture_threshold import CaptureThreshold
+from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey import Smokey
 
 class Main():
@@ -22,10 +22,13 @@ class Main():
     __command_queue = queue.Queue()
     __captureThresholder = None
 
+    __is_simulation = False
+
     def __init__(self, challenge):
         self.__challenge = challenge
-        self.__captureThresholder = CaptureThreshold(self.__command_queue)
         atexit.register(self.cleanup)
+        if (challenge.contains("_sim")):
+            this.__is_simulation = True
 
     def worker(self):
         while True:
@@ -57,15 +60,20 @@ class Main():
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move right wheels faster, ratio > 1
                 # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move left wheels faster, ratio < 1
                 if ratio > 1:
-                    # 
-                    self.__miniMecanum.set_speed_LR(int(speed/ratio), speed)
+                    speedL = int(speed/ratio)
+                    speedR = speed
+                    if self.__is_simulation == False:
+                        self.__miniMecanum.set_speed_LR(speedL, speedR)
+                    
                 if ratio < 1:
-                    self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
+                    speedL = speed
+                    speedR = int(speed * ratio)
+                    if self.__is_simulation == False:
+                        self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
                 #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
             else:
                 speed = 0
                 self.__miniMecanum.set_speed_LR(speed, speed)
-                #print(item[15])
             print("{:d},{:d},{:d},{:d},".format(thickness, first_white_pos, last_white_pos, speed) + str(item[15]))
 
             self.__command_queue.task_done()
@@ -75,7 +83,14 @@ class Main():
         thresholdEnable = True
         stretchEnable = False
         self.__miniMecanum.get_power_stats()
-        self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)        
+        if self.__challenge == 'garden_path':
+            self.__captureThresholder = CaptureThreshold(self.__command_queue)
+            self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)        
+        elif (self.__challenge == "garden_path_sim"):
+            thisdir = os.getcwd() + "/samples/captures/2020-12-13-20-28-36"
+
+            self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
+            self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
         while True:
             pass
             
@@ -83,7 +98,8 @@ class Main():
     def cleanup(self):
         try:
             #self.__command_queue.join()
-            self.__captureThresholder.stop_capture()
+            if self.__challenge == 'garden_path':
+                self.__captureThresholder.stop_capture()
             time.sleep(1)
             self.__miniMecanum.set_speed(0)
             self.__miniMecanum.get_power_stats()
@@ -92,7 +108,7 @@ class Main():
             print("Save failed")
 
 if __name__ == '__main__':
-    main = Main("garden_path")
+    main = Main("garden_path_sim")
     try:
         main.start()
     except:
