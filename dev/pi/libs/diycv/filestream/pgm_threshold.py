@@ -8,10 +8,17 @@ import time
 from timeit import default_timer as timer
 from datetime import datetime
 
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "../models")))
+
+from frame_data import FrameData
+from row_data import RowData
+
 class PgmThreshold():
     __frame_processor_queue = None
     __camera = None
     __source_folder = ""
+    __is_simulation = True
 
     def __init__(self, queue, source_folder):
         self.__frame_processor_queue = queue
@@ -54,40 +61,105 @@ class PgmThreshold():
     def process_bytearray(self, data, w, h, thresh=True, stretch=True):
         y = 0
         out = []
-        while y < h:
-            row = memoryview(data)[y*w:(y+1)*w]
-            if stretch:
-                minval = 255
-                maxval = 0
-                for val in row:
-                    if val < minval:
-                        minval = val
-                    if val > maxval:
-                        maxval = val
+        frame_data = FrameData()
+        average_out=[]
+        average_out = [0 for i in range(w)]         
 
-                diff = maxval - minval
+        try:
+            while y < h:
 
-                factor = 1
-                if diff != 0:
-                    factor = 255/diff
-
-            x = 0
-            for val in row:
+                row = memoryview(data)[y*w:(y+1)*w]
                 if stretch:
-                    val = int((val - minval) * factor)
-                if thresh:
-                    if val > 128:
-                        val = 255
+                    minval = 255
+                    maxval = 0
+                    for val in row:
+                        if val < minval:
+                            minval = val
+                        if val > maxval:
+                            maxval = val
+
+                    diff = maxval - minval
+
+                    factor = 1
+                    if diff != 0:
+                        factor = 255/diff
+
+                x = 0
+                for val in row:
+                    if stretch:
+                        val = int((val - minval) * factor)
+                    if thresh:
+                        if val > 128:
+                            val = 255
+                        else:
+                            val = 0
+                        row[x] = val
                     else:
-                        val = 0
-                    row[x] = val
+                        row[x] = val
+
+                    if x == 0:
+                        average_out[x] = val
+                    else:
+                        average_out[x] = (average_out[x] + val)
+                    if( y == h - 1):
+                        average_out[x] = int(average_out[x] / h)
+                    x = x + 1
+                y = y + 1
+                out.append(row.tolist())
+            if self.__frame_processor_queue  != None:
+                frame_data.rows = out
+                frame_data.average_row = average_out
+                self.set_speed(frame_data)
+                self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
+        except Exception as e:
+                print(e)
+                traceback.print_exc()
+
+    def set_speed(self, frame_data):
+        try:        
+            first_white_pos = 0
+            last_white_pos = 0
+            current_pos_white = False
+            prev_post_white = False
+            speed = 0
+            for pos in range(0,31):
+                if frame_data.average_row[pos] == 255:
+                    if first_white_pos == 0:
+                        first_white_pos = pos
+                    else:
+                        last_white_pos = pos
+                    current_pos_white = True
                 else:
-                    row[x] = val
-                x = x + 1
-            y = y + 1
-            out.append(row.tolist())
-        if self.__frame_processor_queue  != None:
-            self.__frame_processor_queue.put(out, block=False, timeout=0.5)
+                    prev_post_white = current_pos_white
+                    current_pos_white = False
+            thickness = last_white_pos - first_white_pos + 1
+            if  thickness > 1 and thickness < 6:
+                speed = 200
+                #good thickness
+                ideal_center = 8 - (thickness/2)
+                ratio = ideal_center/first_white_pos
+                # 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 | ideal, ratio = 1
+                # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
+                # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move right wheels faster, ratio < 1
+                if ratio > 1:
+                    frame_data.speedL = int(speed/ratio)
+                    frame_data.speedR = speed
+                    if self.__is_simulation == False:
+                        self.__miniMecanum.set_speed_LR(speedL, speedR)
+                    
+                if ratio < 1:
+                    frame_data.speedL = speed
+                    frame_data.speedR = int(speed * ratio)
+                    if self.__is_simulation == False:
+                        self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
+                #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
+            else:
+                frame_data.speedL = 0
+                frame_data.speedR = 0
+
+        except Exception as e:
+                print(e)
+                traceback.print_exc()
 
 
     def start_capture(self, width, height, threshold, stretch, save):
@@ -127,48 +199,17 @@ class PgmThreshold():
 
                 now = timer()
                 t = now - prev
-                #print("Frame time: {}, processing took: {}".format(t, proc_time))
+                #print("Frame {} time: {}, processing took: {}".format(i, t, proc_time))
                 prev = now
 
-                if now - start > 1:
-                    print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
-                    i =0
-                    start = timer()
+            print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
+            start = timer()
 
-                    prev = start
         except Exception as e:
             print(e)
 
-
-        # for foo in self.__camera.capture_continuous(data, 'yuv', use_video_port=True):
-        #     i = i + 1
-        #     total = total + 1
-        #     if save:
-        #         # Save original
-        #         self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, total), width, height, data)
-
-        #     proc_start = timer()
-        #     self.process_bytearray(data, width, height, threshold, stretch)
-        #     proc_time = timer() - proc_start
-
-        #     if save:
-        #         # Save result
-        #         self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, total), width, height, data)
-
-        #     now = timer()
-        #     t = now - prev
-        #     #print("Frame time: {}, processing took: {}".format(t, proc_time))
-        #     prev = now
-
-        #     if now - start > 1:
-        #         print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
-        #         i =0
-        #         start = timer()
-        #         prev = start
-
     def stop_capture(self):
-        self.__camera.stop_preview()
-        self.__camera = None
+        pass
         # exit(0)
 
 
