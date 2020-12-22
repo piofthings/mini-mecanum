@@ -58,10 +58,11 @@ class PgmThreshold():
 
 
 
-    def process_bytearray(self, data, w, h, thresh=True, stretch=True):
+    def process_bytearray(self, data, w, h, thresh=True, stretch=True, index = -1):
         y = 0
         out = []
         frame_data = FrameData()
+        frame_data.index = index
         average_out=[]
         average_out = [0 for i in range(w)]         
 
@@ -108,12 +109,22 @@ class PgmThreshold():
                 out.append(row.tolist())
             if self.__frame_processor_queue  != None:
                 frame_data.rows = out
+                self.nomalize_avg(average_out, w)
                 frame_data.average_row = average_out
                 self.set_speed(frame_data)
                 self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
         except Exception as e:
                 print(e)
                 traceback.print_exc()
+
+    def nomalize_avg(self, average_row, width):
+        for col in range(0, width - 1):
+            if(average_row[col] < 100 and average_row[col] > 9):
+                average_row[col] = 128
+            elif (average_row[col] < 10):
+                average_row[col] = 0
+            elif (average_row[col] > 99):
+                average_row[col] = 255
 
     def set_speed(self, frame_data):
         try:        
@@ -122,7 +133,7 @@ class PgmThreshold():
             current_pos_white = False
             prev_post_white = False
             speed = 0
-            for pos in range(0,31):
+            for pos in range(0,32):
                 if frame_data.average_row[pos] == 255:
                     if first_white_pos == 0:
                         first_white_pos = pos
@@ -133,30 +144,36 @@ class PgmThreshold():
                     prev_post_white = current_pos_white
                     current_pos_white = False
             thickness = last_white_pos - first_white_pos + 1
-            if  thickness > 1 and thickness < 6:
+            if  thickness > 1:
                 speed = 200
                 #good thickness
-                ideal_center = 8 - (thickness/2)
+                ideal_center = (32 - thickness)/2
                 ratio = ideal_center/first_white_pos
+                frame_data.ratio = ratio
                 # 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 | ideal, ratio = 1
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
                 # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move right wheels faster, ratio < 1
                 if ratio > 1:
-                    frame_data.speedL = int(speed/ratio)
-                    frame_data.speedR = speed
+                    frame_data.speedR = int(speed/ratio)
+                    frame_data.speedL = speed
                     if self.__is_simulation == False:
                         self.__miniMecanum.set_speed_LR(speedL, speedR)
                     
-                if ratio < 1:
-                    frame_data.speedL = speed
-                    frame_data.speedR = int(speed * ratio)
+                elif ratio < 1:
+                    frame_data.speedR = speed
+                    frame_data.speedL = int(speed * ratio)
                     if self.__is_simulation == False:
                         self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
+                else :
+                    frame_data.speedL = speed
+                    frame_data.speedR = speed
                 #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
             else:
                 frame_data.speedL = 0
                 frame_data.speedR = 0
-
+            frame_data.first_white_pos = first_white_pos
+            frame_data.last_white_pos = last_white_pos
+            frame_data.thickness = thickness
         except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -191,7 +208,7 @@ class PgmThreshold():
                 data = bytearray(b'\0' * (width * (height*2)))
                 
                 self.read_pgm(fullpath, width, height, data)
-                self.process_bytearray(data, width, height, threshold, stretch)
+                self.process_bytearray(data, width, height, threshold, stretch, index)
                 proc_time = timer() - proc_start
                 if save:
                     # Save result
