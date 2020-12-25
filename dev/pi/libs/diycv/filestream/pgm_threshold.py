@@ -55,9 +55,6 @@ class PgmThreshold():
             traceback.print_exc()
 
             
-
-
-
     def process_bytearray(self, data, w, h, thresh=True, stretch=True, index = -1):
         y = 0
         out = []
@@ -65,9 +62,13 @@ class PgmThreshold():
         frame_data.index = index
         average_out=[]
         average_out = [0 for i in range(w)]         
+        contiguous_whitepixel_count = [0 for i in range(h)]         
 
         try:
             while y < h:
+                row_white_count = 0
+                prev_col_is_white = False
+                row_data = RowData()
 
                 row = memoryview(data)[y*w:(y+1)*w]
                 if stretch:
@@ -98,13 +99,21 @@ class PgmThreshold():
                     else:
                         row[x] = val
 
-                    if x == 0:
-                        average_out[x] = val
-                    else:
-                        average_out[x] = (average_out[x] + val)
+                    average_out[x] = (average_out[x] + val)
                     if( y == h - 1):
                         average_out[x] = int(average_out[x] / h)
+
+                    if val == 255:
+                        if prev_col_is_white == False:
+                            prev_col_is_white = True
+                            row_white_count = row_white_count + 1
+                    else:
+                        prev_col_is_white = False
+                    
                     x = x + 1
+                contiguous_whitepixel_count[y] = row_white_count
+                # print(contiguous_whitepixel_count)
+                row_data.contiguous_whitepixel_count = contiguous_whitepixel_count
                 y = y + 1
                 out.append(row.tolist())
             if self.__frame_processor_queue  != None:
@@ -112,19 +121,53 @@ class PgmThreshold():
                 self.nomalize_avg(average_out, w)
                 frame_data.average_row = average_out
                 self.set_speed(frame_data)
+                self.get_shape(h, frame_data, contiguous_whitepixel_count)
                 self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
         except Exception as e:
                 print(e)
                 traceback.print_exc()
 
+    def get_shape(self, height, frame_data, contiguous_whitepixel_count):
+        starts_with = -1
+        ends_with = 0
+        max = 0
+        min = height
+        for row in range(0, height):
+            if contiguous_whitepixel_count[row] == 0:
+                pass
+            else:
+                if row < 5 or starts_with == -1:                
+                    starts_with = contiguous_whitepixel_count[row]
+                elif row > height - 5:
+                    ends_with = contiguous_whitepixel_count[row]
+            if contiguous_whitepixel_count[row] > max:
+                max = contiguous_whitepixel_count[row]
+            if contiguous_whitepixel_count[row] < min:
+                min = contiguous_whitepixel_count[row]
+        if max == 1:
+            frame_data.is_straight = True
+        else:
+            frame_data.is_straight = False
+
+            if starts_with > 1 and ends_with == 1:
+                frame_data.is_fork = True
+            if starts_with == 1 and ends_with > 1:
+                frame_data.is_join = True
+                frame_data.is_fork = True
+            if starts_with == 1 and ends_with == 1 and max > starts_with:
+                frame_data.is_join = True
+                frame_data.is_fork = True
+
     def nomalize_avg(self, average_row, width):
         for col in range(0, width - 1):
-            if(average_row[col] < 100 and average_row[col] > 9):
-                average_row[col] = 128
-            elif (average_row[col] < 10):
-                average_row[col] = 0
-            elif (average_row[col] > 99):
+            if (average_row[col] > 99):
                 average_row[col] = 255
+            # if(average_row[col] < 100 and average_row[col] > 9):
+            #     average_row[col] = 128
+            # elif (average_row[col] < 10):
+            #     average_row[col] = 0
+            # elif (average_row[col] > 99):
+            #     average_row[col] = 255
 
     def set_speed(self, frame_data):
         try:        
@@ -133,6 +176,7 @@ class PgmThreshold():
             current_pos_white = False
             prev_post_white = False
             speed = 0
+            first_grey_pos = 0
             for pos in range(0,32):
                 if frame_data.average_row[pos] == 255:
                     if first_white_pos == 0:

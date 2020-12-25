@@ -40,10 +40,14 @@ class Main():
             try:
 
                 item = self.__command_queue.get()
-                print("{:d},{:f},{:d},{:d},{:d},{},{},{},{}".format(
+                if item.index == 174:
+                    print(item.rows)
+                print("{:d},{:f},{:d},{},{},{:d},{:d},{},{},{},{}".format(
                     item.index,
                     item.ratio,
                     item.thickness,
+                    item.is_fork,
+                    item.is_straight,
                     item.speedL, 
                     item.speedR, 
                     item.is_fork, 
