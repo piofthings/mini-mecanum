@@ -31,52 +31,56 @@ class Main():
             this.__is_simulation = True
 
     def worker(self):
-        while True:
-            item = self.__command_queue.get()
-            #print(f'Working on {item}')
-            #print(item[15])
-            first_white_pos = 0
-            last_white_pos = 0
-            current_pos_white = False
-            prev_post_white = False
-            speed = 0
-            for pos in range(0,31):
-                if item[15][pos] == 255:
-                    if first_white_pos == 0:
-                        first_white_pos = pos
-                    else:
-                        last_white_pos = pos
-                    current_pos_white = True
-                else:
-                    prev_post_white = current_pos_white
-                    current_pos_white = False
-            thickness = last_white_pos - first_white_pos + 1
-            if  thickness > 1 and thickness < 6:
-                speed = 200
-                #good thickness
-                ideal_center = 8 - (thickness/2)
-                ratio = ideal_center/first_white_pos
-                # 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 | ideal, ratio = 1
-                # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move right wheels faster, ratio > 1
-                # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move left wheels faster, ratio < 1
-                if ratio > 1:
-                    speedL = int(speed/ratio)
-                    speedR = speed
-                    if self.__is_simulation == False:
-                        self.__miniMecanum.set_speed_LR(speedL, speedR)
-                    
-                if ratio < 1:
-                    speedL = speed
-                    speedR = int(speed * ratio)
-                    if self.__is_simulation == False:
-                        self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
-                #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
-            else:
-                speed = 0
-                self.__miniMecanum.set_speed_LR(speed, speed)
-            print("{:d},{:d},{:d},{:d},".format(thickness, first_white_pos, last_white_pos, speed) + str(item[15]))
+        speedL = 0
+        speedR = 0
+        ratio = 0.0
+        """
+        Number of frames that must be marked as "fork" before we start considering the frame 
+        as a fork. Increase value if too many false positives
+        """
+        fork_id_frames_threshold = 3 
 
-            self.__command_queue.task_done()
+        fork_number = 0
+        continuous_fork_frames_for = 0
+        looking_at_fork = False
+
+        while True:
+            try:
+                item = self.__command_queue.get()
+                if item.index == 174:
+                    print(item.rows)
+                if item.is_fork :
+                    continuous_fork_frames_for = continuous_fork_frames_for + 1
+                else:
+                    continuous_fork_frames_for = 0
+                if continuous_fork_frames_for > fork_id_frames_threshold:
+                    item.is_fork = True
+                    if looking_at_fork == False:
+                        looking_at_fork = True
+                        fork_number = fork_number + 1
+                else:
+                    item.is_fork = False
+                    looking_at_fork = False
+
+                print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{}".format(
+                    item.index,
+                    item.ratio,
+                    item.thickness,
+                    item.speedL, 
+                    item.speedR, 
+                    item.is_fork, 
+                    item.is_straight, 
+                    continuous_fork_frames_for,
+                    fork_number,
+                    item.average_row))
+
+                #self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
+                self.__command_queue.task_done()
+            except Exception as e:
+                print(e)
+                traceback.print_exc()
+
+
 
     def start(self):
         threading.Thread(target=self.worker, daemon=True).start()
@@ -84,11 +88,10 @@ class Main():
         stretchEnable = False
         self.__miniMecanum.get_power_stats()
         if self.__challenge == 'garden_path':
-            self.__captureThresholder = CaptureThreshold(self.__command_queue)
+            self.__captureThresholder = CaptureThreshold(self.__command_queue, 32, 32, 30)
             self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)        
         elif (self.__challenge == "garden_path_sim"):
             thisdir = os.getcwd() + "/samples/captures/2020-12-13-20-28-36"
-
             self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
             self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
         while True:

@@ -36,12 +36,35 @@ class Main():
         speedL = 0
         speedR = 0
         ratio = 0.0
+        """
+        Number of frames that must be marked as "fork" to be counted as a fork. 
+        Increase value if too many false positives
+        """
+        fork_id_frames_threshold = 3 
+
+        fork_number = 0
+        continuous_fork_frames_for = 0
+        looking_at_fork = False
+
         while True:
             try:
                 item = self.__command_queue.get()
                 if item.index == 174:
                     print(item.rows)
-                print("{:d},{:f},{:d},{:d},{:d},{},{},{}".format(
+                if item.is_fork :
+                    continuous_fork_frames_for = continuous_fork_frames_for + 1
+                else:
+                    continuous_fork_frames_for = 0
+                if continuous_fork_frames_for > fork_id_frames_threshold:
+                    item.is_fork = True
+                    if looking_at_fork == False:
+                        looking_at_fork = True
+                        fork_number = fork_number + 1
+                else:
+                    item.is_fork = False
+                    looking_at_fork = False
+
+                print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{}".format(
                     item.index,
                     item.ratio,
                     item.thickness,
@@ -49,7 +72,11 @@ class Main():
                     item.speedR, 
                     item.is_fork, 
                     item.is_straight, 
+                    continuous_fork_frames_for,
+                    fork_number,
                     item.average_row))
+
+                #self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
                 self.__command_queue.task_done()
             except Exception as e:
                 print(e)
@@ -65,8 +92,8 @@ class Main():
 
             self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
             self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
-        while True:
-            pass
+        # while True:
+        #     pass
             
 
     def cleanup(self):

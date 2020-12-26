@@ -7,64 +7,44 @@ import time
 from timeit import default_timer as timer
 from datetime import datetime
 
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "../models")))
+
+from frame_data import FrameData
+from row_data import RowData
+
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "../detection")))
+
+from line import Line
+
 class CaptureThreshold():
     __frame_processor_queue = None
     __camera = None
+    __line_processor = None
+    __width = 32
+    __height = 32
+    __framerate = 30
 
-    def __init__(self, queue):
+    def __init__(self, queue, width, height, framerate):
+        self.__framerate = framerate
         self.__frame_processor_queue = queue
+        self.__width = width
+        self.__height = height
+        self.__line_processor = Line(queue)
+        self.__camera = picamera.PiCamera(resolution='{:d}x{:d}'.format(width, height), framerate=framerate)
+        self.__camera.start_preview()
+        # Wait for 3s to settle
+        time.sleep(3)
 
     def write_pgm(self, filename, w, h, data):
         with open(filename, 'wb') as f:
             f.write("P5\n{:d} {:d}\n255\n".format(w, h).encode('utf8'))
             f.write(data)
 
-    def process_bytearray(self, data, w, h, thresh=True, stretch=True):
-        y = 0
-        out = []
-        while y < h:
-            row = memoryview(data)[y*w:(y+1)*w]
-            if stretch:
-                minval = 255
-                maxval = 0
-                for val in row:
-                    if val < minval:
-                        minval = val
-                    if val > maxval:
-                        maxval = val
-
-                diff = maxval - minval
-
-                factor = 1
-                if diff != 0:
-                    factor = 255/diff
-
-            x = 0
-            for val in row:
-                if stretch:
-                    val = int((val - minval) * factor)
-                if thresh:
-                    if val > 128:
-                        val = 255
-                    else:
-                        val = 0
-                    row[x] = val
-                else:
-                    row[x] = val
-                x = x + 1
-            y = y + 1
-            out.append(row.tolist())
-        if self.__frame_processor_queue  != None:
-            self.__frame_processor_queue.put(out, block=False, timeout=0.5)
-
-
-    def start_capture(self, width, height, threshold, stretch, save):
-        self.__camera = picamera.PiCamera(resolution='{:d}x{:d}'.format(width, height), framerate=30)
+    
+    def start_capture(self, threshold, stretch, save):
         data = bytearray(b'\0' * (width * (height*2)))
-
-        self.__camera.start_preview()
-        # Wait for 3s to settle
-        time.sleep(3)
         start = timer()
         prev = start
         i = 0
@@ -73,34 +53,32 @@ class CaptureThreshold():
         if not os.path.exists(folderName):
             os.makedirs(folderName)
 
-        for foo in self.__camera.capture_continuous(data, 'yuv', use_video_port=True):
-            i = i + 1
-            total = total + 1
-            if save:
-                # Save original
-                self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, total), width, height, data)
+        try:
+            for foo in self.__camera.capture_continuous(data, 'yuv', use_video_port=True):
+                i = i + 1
+                if save:
+                    # Save original
+                    self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, total), width, height, data)
 
-            proc_start = timer()
-            self.process_bytearray(data, width, height, threshold, stretch)
-            proc_time = timer() - proc_start
+                self.__line_processor.process_bytearray(data, width, height, threshold, stretch)
 
-            if save:
-                # Save result
-                self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, total), width, height, data)
+                if save:
+                    # Save result
+                    self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, total), width, height, data)
 
-            now = timer()
-            t = now - prev
-            #print("Frame time: {}, processing took: {}".format(t, proc_time))
-            prev = now
+                now = timer()
+                t = now - prev
+                #print("Frame time: {}, processing took: {}".format(t, proc_time))
+                prev = now
 
-            if now - start > 1:
-                print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
-                i =0
-                start = timer()
-                prev = start
+            print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
+        except Exception as e:
+            print(e)
+
 
     def stop_capture(self):
-        self.__camera.stop_preview()
+        if self.__camera:
+            self.__camera.stop_preview()
         # exit(0)
 
 
