@@ -58,6 +58,7 @@ class Main():
                     if looking_at_fork == False:
                         looking_at_fork = True
                         fork_number = fork_number + 1
+                        one_time_adjustment = False
                 else:
                     item.is_fork = False
                     looking_at_fork = False
@@ -74,7 +75,18 @@ class Main():
                     fork_number,
                     item.average_row))
 
-                #self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
+                if fork_number == 1:
+                    pass #no adjustments necessary, just follow the line
+                elif fork_number == 2:
+                    if one_time_adjustment == False and continuous_fork_frames_for > 5:
+                        self.__miniMecanum.set_speed_LR(200, 100)        
+                        one_time_adjustment = True
+                elif fork_number == 3:
+                    if one_time_adjustment == False and continuous_fork_frames_for > 5:
+                        self.__miniMecanum.set_speed_LR(70, 200)        
+                        one_time_adjustment = True
+                else:
+                    self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
                 self.__command_queue.task_done()
             except Exception as e:
                 print(e)
