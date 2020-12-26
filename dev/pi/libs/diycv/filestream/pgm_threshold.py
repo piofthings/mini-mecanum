@@ -60,6 +60,8 @@ class PgmThreshold():
         out = []
         frame_data = FrameData()
         frame_data.index = index
+        frame_data.width = w
+        frame_data.height = h
         average_out=[]
         average_out = [0 for i in range(w)]         
         contiguous_whitepixel_count = [0 for i in range(h)]         
@@ -120,7 +122,7 @@ class PgmThreshold():
                 frame_data.rows = out
                 self.nomalize_avg(average_out, w)
                 frame_data.average_row = average_out
-                self.set_speed(frame_data)
+                self.calculate_speed(frame_data)
                 self.get_shape(h, frame_data, contiguous_whitepixel_count)
                 self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
         except Exception as e:
@@ -160,7 +162,7 @@ class PgmThreshold():
 
     def nomalize_avg(self, average_row, width):
         for col in range(0, width - 1):
-            if (average_row[col] > 99):
+            if (average_row[col] > 94):
                 average_row[col] = 255
             # if(average_row[col] < 100 and average_row[col] > 9):
             #     average_row[col] = 128
@@ -169,7 +171,7 @@ class PgmThreshold():
             # elif (average_row[col] > 99):
             #     average_row[col] = 255
 
-    def set_speed(self, frame_data):
+    def calculate_speed(self, frame_data):
         try:        
             first_white_pos = 0
             last_white_pos = 0
@@ -177,7 +179,8 @@ class PgmThreshold():
             prev_post_white = False
             speed = 0
             first_grey_pos = 0
-            for pos in range(0,32):
+            last_grey_pos = 0
+            for pos in range(0,frame_data.width):
                 if frame_data.average_row[pos] == 255:
                     if first_white_pos == 0:
                         first_white_pos = pos
@@ -187,34 +190,49 @@ class PgmThreshold():
                 else:
                     prev_post_white = current_pos_white
                     current_pos_white = False
+                    if frame_data.average_row[pos] > 0:
+                        if first_grey_pos == 0:
+                            first_grey_pos = pos
+                        if pos > last_grey_pos:
+                            last_grey_pos = pos
             thickness = last_white_pos - first_white_pos + 1
             if  thickness > 1:
                 speed = 200
                 #good thickness
-                ideal_center = (32 - thickness)/2
-                ratio = ideal_center/first_white_pos
+                ideal_center = frame_data.width/2
+
+                ratio = ideal_center/ (first_white_pos + (thickness/2) )
                 frame_data.ratio = ratio
                 # 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 | ideal, ratio = 1
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
                 # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move right wheels faster, ratio < 1
-                if ratio > 1:
-                    frame_data.speedR = int(speed/ratio)
-                    frame_data.speedL = speed
-                    if self.__is_simulation == False:
-                        self.__miniMecanum.set_speed_LR(speedL, speedR)
-                    
-                elif ratio < 1:
-                    frame_data.speedR = speed
-                    frame_data.speedL = int(speed * ratio)
-                    if self.__is_simulation == False:
-                        self.__miniMecanum.set_speed_LR(speed, int(speed * ratio))
-                else :
-                    frame_data.speedL = speed
-                    frame_data.speedR = speed
-                #print("{:d}-{:d}-{:d}".format(thickness, first_white_pos, last_white_pos))
             else:
+                speed = 120
                 frame_data.speedL = 0
                 frame_data.speedR = 0
+                thickness = last_grey_pos - first_grey_pos # ????????????
+                ideal_center = (frame_data.width)/2
+                grey_center = thickness/2
+                ratio = grey_center/ideal_center
+                frame_data.ratio = ratio
+                if first_grey_pos > (frame_data.width - last_grey_pos):
+                    frame_data.veer_right = True
+                else:
+                    frame_data.veer_left = True
+            if ratio > 1:
+                frame_data.speedR = int(speed/ratio)
+                frame_data.speedL = speed
+                if self.__is_simulation == False:
+                    self.__miniMecanum.calculate_speed_LR(speedL, speedR)
+            elif ratio < 1:
+                frame_data.speedR = speed
+                frame_data.speedL = int(speed * ratio)
+                if self.__is_simulation == False:
+                    self.__miniMecanum.calculate_speed_LR(speed, int(speed * ratio))
+            else :
+                frame_data.speedL = speed
+                frame_data.speedR = speed
+
             frame_data.first_white_pos = first_white_pos
             frame_data.last_white_pos = last_white_pos
             frame_data.thickness = thickness
