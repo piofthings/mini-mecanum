@@ -6,6 +6,7 @@ import warnings
 import time
 from timeit import default_timer as timer
 from datetime import datetime
+import traceback
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../models")))
@@ -44,11 +45,11 @@ class CaptureThreshold():
 
     
     def start_capture(self, threshold, stretch, save):
-        data = bytearray(b'\0' * (width * (height*2)))
+        data = bytearray(b'\0' * (self.__width * (self.__height * 2)))
         start = timer()
         prev = start
         i = 0
-        total = 0
+        # total = 0
         folderName = "captures/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         if not os.path.exists(folderName):
             os.makedirs(folderName)
@@ -58,13 +59,13 @@ class CaptureThreshold():
                 i = i + 1
                 if save:
                     # Save original
-                    self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, total), width, height, data)
+                    self.write_pgm("{:s}/grayscale_{:d}.pgm".format(folderName, i), self.__width, self.__height, data)
 
-                self.__line_processor.process_bytearray(data, width, height, threshold, stretch)
+                self.__line_processor.process_bytearray(data, self.__width, self.__height, threshold, stretch, i)
 
                 if save:
                     # Save result
-                    self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, total), width, height, data)
+                    self.write_pgm("{:s}/processed_{:d}.pgm".format(folderName, i), self.__width, self.__height, data)
 
                 now = timer()
                 t = now - prev
@@ -74,6 +75,8 @@ class CaptureThreshold():
             print("{:d} frames in {}, {} fps".format(i, now - start, i / (now - start)))
         except Exception as e:
             print(e)
+            traceback.print_exc()
+
 
 
     def stop_capture(self):

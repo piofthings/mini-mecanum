@@ -2,7 +2,8 @@ import os
 import sys
 from struct import *
 import array
-import numpy as np
+import traceback
+
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../models")))
@@ -13,7 +14,9 @@ from row_data import RowData
 
 class Line():
     __frame_processor_queue = None
-    
+    top_speed = 120
+    half_speed = 60
+
     def __init__ (self, queue):
         self.__frame_processor_queue = queue
 
@@ -158,7 +161,7 @@ class Line():
                             last_grey_pos = pos
             thickness = last_white_pos - first_white_pos + 1
             if  thickness > 1:
-                speed = 200
+                speed = self.top_speed
                 #good thickness
                 ideal_center = frame_data.width/2
 
@@ -168,7 +171,7 @@ class Line():
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
                 # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move right wheels faster, ratio < 1
             else:
-                speed = 120
+                speed = self.half_speed
                 frame_data.speedL = 0
                 frame_data.speedR = 0
                 thickness = last_grey_pos - first_grey_pos # ????????????

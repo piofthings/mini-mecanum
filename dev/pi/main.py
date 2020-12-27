@@ -7,6 +7,7 @@ import atexit
 from timeit import default_timer as timer
 from datetime import datetime
 import threading, queue
+import traceback
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "./libs")))
@@ -27,15 +28,15 @@ class Main():
     def __init__(self, challenge):
         self.__challenge = challenge
         atexit.register(self.cleanup)
-        if (challenge.contains("_sim")):
-            this.__is_simulation = True
+        if ("_sim" in challenge):
+            self.__is_simulation = True
 
     def worker(self):
         speedL = 0
         speedR = 0
         ratio = 0.0
         """
-        Number of frames that must be marked as "fork" before we start considering the frame 
+        Number of frames that must be marked as "fork" before we star t considering the frame 
         as a fork. Increase value if too many false positives
         """
         fork_id_frames_threshold = 3 
@@ -47,8 +48,8 @@ class Main():
         while True:
             try:
                 item = self.__command_queue.get()
-                if item.index == 174:
-                    print(item.rows)
+                # if item.index == 174:
+                #     print(item.rows)
                 if item.is_fork :
                     continuous_fork_frames_for = continuous_fork_frames_for + 1
                 else:
@@ -95,27 +96,30 @@ class Main():
 
 
     def start(self):
-        threading.Thread(target=self.worker, daemon=True).start()
-        thresholdEnable = True
-        stretchEnable = False
-        self.__miniMecanum.get_power_stats()
-        if self.__challenge == 'garden_path':
-            self.__captureThresholder = CaptureThreshold(self.__command_queue, 32, 32, 30)
-            self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)        
-        elif (self.__challenge == "garden_path_sim"):
-            thisdir = os.getcwd() + "/samples/captures/2020-12-13-20-28-36"
-            self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
-            self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
-        while True:
-            pass
+        try:
+            threading.Thread(target=self.worker, daemon=True).start()
+            thresholdEnable = True
+            stretchEnable = False
+            self.__miniMecanum.get_power_stats()
+            if self.__challenge == 'garden_path':
+                self.__captureThresholder = CaptureThreshold(self.__command_queue, 32, 32, 30)
+                self.__captureThresholder.start_capture(thresholdEnable, stretchEnable, True)        
+            elif (self.__challenge == "garden_path_sim"):
+                thisdir = os.getcwd() + "/samples/captures/2020-12-13-20-28-36"
+                self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
+                self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
+            while True:
+                pass
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
             
 
     def cleanup(self):
         try:
-            #self.__command_queue.join()
+            self.__command_queue.join()
             if self.__challenge == 'garden_path':
                 self.__captureThresholder.stop_capture()
-            time.sleep(1)
             self.__miniMecanum.set_speed(0)
             self.__miniMecanum.get_power_stats()
             self.__miniMecanum.set_speed(0)
@@ -123,7 +127,7 @@ class Main():
             print("Save failed")
 
 if __name__ == '__main__':
-    main = Main("garden_path_sim")
+    main = Main("garden_path")
     try:
         main.start()
     except:
