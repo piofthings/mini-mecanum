@@ -16,9 +16,12 @@ class Line():
     __frame_processor_queue = None
     top_speed = 120
     half_speed = 60
+    __set_speed_func = None
 
-    def __init__ (self, queue):
+    def __init__ (self, queue, set_speed = None):
         self.__frame_processor_queue = queue
+        self.__set_speed_func = set_speed
+
 
     def process_bytearray(self, data, width, height, thresh=True, stretch=True, index = -1):
         y = 0
@@ -82,13 +85,15 @@ class Line():
                 row_data.contiguous_whitepixel_count = contiguous_whitepixel_count
                 y = y + 1
                 out.append(row.tolist())
-            if self.__frame_processor_queue  != None:
+            # if self.__frame_processor_queue  != None:
+            if self.__set_speed_func  != None:
                 frame_data.rows = out
                 self.nomalize_avg(average_out, width)
                 frame_data.average_row = average_out
                 self.get_shape(height, frame_data, contiguous_whitepixel_count)
                 self.calculate_speed(frame_data)
-                self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
+                # self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
+                self.__set_speed_func(frame_data)
         except Exception as e:
                 print(e)
                 traceback.print_exc()

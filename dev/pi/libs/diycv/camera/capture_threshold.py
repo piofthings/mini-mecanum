@@ -27,12 +27,12 @@ class CaptureThreshold():
     __height = 32
     __framerate = 30
 
-    def __init__(self, queue, width, height, framerate):
+    def __init__(self, queue, width, height, framerate, set_speed):
         self.__framerate = framerate
         self.__frame_processor_queue = queue
         self.__width = width
         self.__height = height
-        self.__line_processor = Line(queue)
+        self.__line_processor = Line(queue, set_speed)
         self.__camera = picamera.PiCamera(resolution='{:d}x{:d}'.format(width, height), framerate=framerate)
         self.__camera.start_preview()
         # Wait for 3s to settle
