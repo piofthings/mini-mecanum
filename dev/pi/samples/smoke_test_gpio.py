@@ -12,7 +12,7 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../libs/smokey")))
 
-from smokey import SmokeyGpio
+from smokey_gpio import SmokeyGpio
 
 
 class SmokeyTest:
@@ -32,13 +32,6 @@ class SmokeyTest:
         try:
             self.__miniMecanum.set_speed(0)
             self.__miniMecanum.get_power_stats()
-            print(self.__frame)
-            print(date.strftime('%H-%M-%S-%f')[:-3])
-
-            folderName = 'captures/' + date.strftime('%Y-%m-%d-%H-%M-%S')
-            if not os.path.exists(folderName):
-                os.makedirs(folderName)
-            np.save(folderName + "/" + date.strftime('%H-%M-%S-%f')[:-3], self.__mem_buffer)
         except:
             print("Save failed")
 

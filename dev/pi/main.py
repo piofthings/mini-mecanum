@@ -14,11 +14,11 @@ sys.path.append(os.path.abspath(os.path.join(
 
 from diycv.camera.capture_threshold import CaptureThreshold
 from diycv.filestream.pgm_threshold import PgmThreshold
-from smokey.smokey import Smokey
+from smokey.smokey_gpio import SmokeyGpio
 
 class Main():
     __challenge = ""
-    __miniMecanum = Smokey()
+    __miniMecanum = SmokeyGpio([17,27,23,24,5,6,26,16])
 
     __command_queue = queue.Queue()
     __captureThresholder = None
@@ -44,8 +44,6 @@ class Main():
 
 
     def worker(self, item):
-
-
         # while True:
         try:
             # item = self.__command_queue.get()
@@ -79,6 +77,7 @@ class Main():
                 item.average_row))
 
             if self.fork_number == 1:
+                self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
                 pass #no adjustments necessary, just follow the line
             elif self.fork_number == 2:
                 if self.one_time_adjustment == False and self.continuous_fork_frames_for > 5:
@@ -124,7 +123,7 @@ class Main():
     def cleanup(self):
         try:
             now = timer()
-            print(str(self.last_index/(now - self.capture_started)))
+            print(str(self.last_index/(now - self.capture_started)) + " Frames per second")
             # self.__command_queue.join()
             if self.__challenge == 'garden_path':
                 self.__captureThresholder.stop_capture()
