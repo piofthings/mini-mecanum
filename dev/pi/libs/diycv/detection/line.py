@@ -17,6 +17,8 @@ class Line():
     top_speed = 120
     half_speed = 60
     __set_speed_func = None
+    ideal_center = -1
+
 
     def __init__ (self, queue, set_speed = None):
         self.__frame_processor_queue = queue
@@ -30,6 +32,7 @@ class Line():
         frame_data.index = index
         frame_data.width = width
         frame_data.height = height
+        self.ideal_center = frame_data.width/2
         average_out=[]
         average_out = [0 for i in range(width)]         
         contiguous_whitepixel_count = [0 for i in range(height)]         
@@ -168,9 +171,8 @@ class Line():
             if  thickness > 1:
                 speed = self.top_speed
                 #good thickness
-                ideal_center = frame_data.width/2
 
-                ratio = ideal_center/ (first_white_pos + (thickness/2) )
+                ratio = (first_white_pos + (thickness/2) )/self.ideal_center 
                 frame_data.ratio = ratio
                 # 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 | ideal, ratio = 1
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
@@ -180,9 +182,8 @@ class Line():
                 frame_data.speedL = 0
                 frame_data.speedR = 0
                 thickness = last_grey_pos - first_grey_pos # ????????????
-                ideal_center = (frame_data.width)/2
                 grey_center = thickness/2
-                ratio = grey_center/ideal_center
+                ratio = grey_center/self.ideal_center
                 frame_data.ratio = ratio
                 if first_grey_pos > (frame_data.width - last_grey_pos):
                     frame_data.veer_right = True

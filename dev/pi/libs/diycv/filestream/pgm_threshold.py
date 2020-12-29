@@ -26,10 +26,10 @@ class PgmThreshold():
     __is_simulation = True
     __line_processor = None
 
-    def __init__(self, queue, source_folder):
+    def __init__(self, queue, source_folder, set_speed):
         self.__frame_processor_queue = queue
         self.__source_folder = source_folder
-        self.__line_processor = Line(queue)
+        self.__line_processor = Line(queue, set_speed)
 
     def write_pgm(self, filename, w, h, data):
         with open(filename, 'wb') as f:

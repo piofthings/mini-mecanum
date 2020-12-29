@@ -6,9 +6,9 @@ import os
 import time
 #from matplotlib import pyplot as plt
 
-thisdir = os.getcwd() + "/captures/2020-12-13-20-28-36"
+thisdir = os.getcwd() + "/captures/2020-12-29-02-22-32"
 print (thisdir)
-
+img = None
 for i in range(1,3132):
     image_name = os.path.join(thisdir, 'grayscale_{:d}.pgm'.format(i)) 
     img = cv2.imread(image_name,-1)

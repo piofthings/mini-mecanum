@@ -44,11 +44,7 @@ class Main():
 
 
     def worker(self, item):
-        # while True:
         try:
-            # item = self.__command_queue.get()
-            # if item.index == 174:
-            #     print(item.rows)
             self.last_index = item.index
             if item.is_fork :
                 self.continuous_fork_frames_for = self.continuous_fork_frames_for + 1
