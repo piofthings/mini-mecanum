@@ -124,7 +124,7 @@ void receiveEvent() {
     {
       case 1: // Set Speed
       {
-        String s = Serial1.readStringUntil('\n');
+        String s = speeds;
         int speed = s.toInt();
         setSpeed(speed);
         Serial.print("\nSpeed: ");
@@ -133,7 +133,7 @@ void receiveEvent() {
       }
       case 2: // Set Direction
       {
-        String d = Serial.readStringUntil('\n');
+        String d = getValue(speeds, ',', 0);
         int direction = d.toInt();
         Serial.print("\nDirection: ");
         Serial.println(d);
@@ -158,24 +158,25 @@ void receiveEvent() {
       {
         String slf = getValue(speeds, ',', 0);
         int speedLeftFront = slf.toInt();
-        String slr = SgetValue(speeds, ',', 1);
-        int speedLeftRight = slr.toInt();
+        String slr = getValue(speeds, ',', 1);
+        int speedLeftRear = slr.toInt();
         String srf = getValue(speeds, ',', 2);
         int speedRightFront = srf.toInt();
         String srr = getValue(speeds, ',', 4);;
         int speedRightRear = srr.toInt();
-        setLfLrRfRrSpeed(slf,slr,srf,srr);
+        setLfLrRfRrSpeed(speedLeftFront,speedLeftRear,speedRightFront,speedRightRear);
         break;
       }
       case 5: // Get Last Power readings
       {
-          Serial1.print(ina_input_current);  
-          Serial1.print(", ");  
-          Serial1.print(ina_input_voltage);  
-          Serial1.print(", ");  
-          Serial1.print(ina_input_power);  
-          Serial1.print(", ");
-          Serial1.println(currentSpeed);  
+        writeSerialLog();
+        Serial1.print(ina_input_current);  
+        Serial1.print(", ");  
+        Serial1.print(ina_input_voltage);  
+        Serial1.print(", ");  
+        Serial1.print(ina_input_power);  
+        Serial1.print(", ");
+        Serial1.println(currentSpeed);  
         break;
       }
     }
