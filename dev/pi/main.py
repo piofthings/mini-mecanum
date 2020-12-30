@@ -29,7 +29,7 @@ class Main():
     Number of frames that must be marked as "fork" before we star t considering the frame 
     as a fork. Increase value if too many false positives
     """
-    fork_id_frames_threshold = 1 
+    fork_id_frames_threshold = 2 
     last_index = 0
     fork_number = 0
     continuous_fork_frames_for = 0
@@ -76,13 +76,24 @@ class Main():
                 self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
                 pass #no adjustments necessary, just follow the line
             elif self.fork_number == 2:
-                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 5:
-                    self.__miniMecanum.set_speed_LR(200, 100)        
+                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 8:
+                    self.__miniMecanum.set_speed_LR(200, 0)        
                     self.one_time_adjustment = True
+                    time.sleep(0.25)
+                    self.__miniMecanum.set_speed_LR(120, 120)
+                else:
+                    self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
+
+
             elif self.fork_number == 3:
-                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 5:
-                    self.__miniMecanum.set_speed_LR(70, 200)        
+                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 2:
+                    self.fork_number = 4
+                    self.__miniMecanum.set_speed_LR(0, 200)        
                     self.one_time_adjustment = True
+                    time.sleep(0.25)
+                    self.__miniMecanum.set_speed_LR(60, 60)
+                else:
+                    self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
             else:
                 self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
             # self.__command_queue.task_done()

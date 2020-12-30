@@ -14,11 +14,11 @@ from row_data import RowData
 
 class Line():
     __frame_processor_queue = None
-    top_speed = 120
-    half_speed = 60
+    top_speed = 230
+    half_speed = 50
     __set_speed_func = None
     ideal_center = -1
-
+    prev_frame_data = None
 
     def __init__ (self, queue, set_speed = None):
         self.__frame_processor_queue = queue
@@ -96,6 +96,7 @@ class Line():
                 self.get_shape(height, frame_data, contiguous_whitepixel_count)
                 self.calculate_speed(frame_data)
                 # self.__frame_processor_queue.put(frame_data, block=True, timeout=0.5)
+                self.prev_frame_data = frame_data
                 self.__set_speed_func(frame_data)
         except Exception as e:
                 print(e)
@@ -182,9 +183,14 @@ class Line():
                 frame_data.speedL = 0
                 frame_data.speedR = 0
                 thickness = last_grey_pos - first_grey_pos # ????????????
-                grey_center = thickness/2
-                ratio = grey_center/self.ideal_center
-                frame_data.ratio = ratio
+                if thickness > 0:
+                    grey_center = thickness/2
+                    ratio = (first_grey_pos + (thickness/2) )/self.ideal_center
+                    frame_data.ratio = ratio
+                else:
+                    ratio = self.prev_frame_data.ratio
+                    frame_data.ratio = ratio
+                    speed = self.top_speed
                 if first_grey_pos > (frame_data.width - last_grey_pos):
                     frame_data.veer_right = True
                 else:
