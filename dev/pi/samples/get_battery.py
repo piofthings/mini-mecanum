@@ -12,9 +12,9 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "../libs/smokey")))
 
-from smokey import Smokey
+from smokey_gpio import SmokeyGpio
 
 
 miniMecanum = None
-miniMecanum = Smokey()
+miniMecanum = SmokeyGpio()
 miniMecanum.get_power_stats()
