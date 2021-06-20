@@ -143,6 +143,15 @@ class Line():
             #     average_row[col] = 0
             # elif (average_row[col] > 99):
             #     average_row[col] = 255
+    def set_top_speed(self, thickness):
+        speed = 0
+        if thickness > 3 and thickness < 14:
+            speed = self.top_speed
+        elif thickness < 3 or thickness > 25:
+             speed = int(self.top_speed / 2)
+        else:
+            speed = self.half_speed
+        return speed
 
     def calculate_speed(self, frame_data):
         try:        
@@ -169,8 +178,9 @@ class Line():
                         if pos > last_grey_pos:
                             last_grey_pos = pos
             thickness = last_white_pos - first_white_pos + 1
-            if  thickness > 3 and thickness < 10:
-                speed = self.top_speed
+            speed = self.set_top_speed(thickness)
+            if  thickness > 1:
+                
                 #good thickness
 
                 ratio = (first_white_pos + (thickness/2) )/self.ideal_center 
@@ -179,7 +189,7 @@ class Line():
                 # 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 | move left wheels faster, ratio > 1
                 # 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 | move right wheels faster, ratio < 1
             else:
-                speed = self.half_speed
+                #speed = self.half_speed
                 frame_data.speedL = 0
                 frame_data.speedR = 0
                 thickness = last_grey_pos - first_grey_pos # ????????????

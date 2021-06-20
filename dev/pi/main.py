@@ -12,9 +12,13 @@ import traceback
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), "./libs")))
 
+   
 from diycv.camera.capture_threshold import CaptureThreshold
 from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey_gpio import SmokeyGpio
+
+
+from bno55.bno55 import BNO055
 
 class Main():
     __challenge = ""
@@ -25,11 +29,13 @@ class Main():
 
     __is_simulation = False
 
+    __bno55 = BNO055()
+
     """
     Number of frames that must be marked as "fork" before we star t considering the frame 
     as a fork. Increase value if too many false positives
     """
-    fork_id_frames_threshold = 2 
+    fork_id_frames_threshold = 3
     last_index = 0
     fork_number = 0
     continuous_fork_frames_for = 0
@@ -41,6 +47,8 @@ class Main():
         atexit.register(self.cleanup)
         if ("_sim" in challenge):
             self.__is_simulation = True
+        if not self.__bno55.begin():
+            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
 
     def worker(self, item):
@@ -59,8 +67,8 @@ class Main():
             else:
                 item.is_fork = False
                 self.looking_at_fork = False
-
-            print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{}".format(
+            x,y,z,w = self.__bno55.getQuat()
+            print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{},{},{},{},{}".format(
                 item.index,
                 item.ratio,
                 item.thickness,
@@ -70,7 +78,11 @@ class Main():
                 item.is_straight, 
                 self.continuous_fork_frames_for,
                 self.fork_number,
-                item.average_row))
+                item.average_row,
+                x,
+                y,
+                z,
+                w))
 
             if self.fork_number == 1:
                 self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
@@ -107,6 +119,7 @@ class Main():
     def start(self):
         try:
             # threading.Thread(target=self.worker, daemon=True).start()
+            
             thresholdEnable = True
             stretchEnable = False
             self.__miniMecanum.get_power_stats()
@@ -115,12 +128,10 @@ class Main():
                 self.capture_started = timer()
                 self.__captureThresholder.start_capture(thresholdEnable, stretchEnable, True)        
             elif (self.__challenge == "garden_path_sim"):
-                thisdir = os.getcwd() + "/samples/captures/2020-12-13-20-28-36"
+                thisdir = os.getcwd() + "/samples/captures/2021-06-20-01"
                 self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
                 self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
-            # while True:
-            #     timer.sleep(0.001)
-            #     pass
+
         except Exception as e:
             print(e)
             traceback.print_exc()
@@ -131,7 +142,6 @@ class Main():
         try:
             now = timer()
             print(str(self.last_index/(now - self.capture_started)) + " Frames per second")
-            # self.__command_queue.join()
             if self.__challenge == 'garden_path':
                 self.__captureThresholder.stop_capture()
             self.__miniMecanum.set_speed(0)
