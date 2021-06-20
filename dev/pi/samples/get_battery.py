@@ -16,5 +16,5 @@ from smokey_gpio import SmokeyGpio
 
 
 miniMecanum = None
-miniMecanum = SmokeyGpio()
+miniMecanum = SmokeyGpio([17,27,23,24,5,6,26,16])
 miniMecanum.get_power_stats()

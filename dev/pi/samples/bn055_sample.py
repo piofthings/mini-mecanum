@@ -15,18 +15,20 @@ bno = BNO055()
 if not bno.begin():
     raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
-while True:
+out = True
+while out:
+    time.sleep(1)
     # Read the Euler angles for heading, roll, pitch (all in degrees).
     heading, roll, pitch = bno.getVector(0x1A)
     # Read the calibration status, 0=uncalibrated and 3=fully calibrated.
     sys, gyro, accel, mag = bno.getCalibration()
     # Print everything out.
-    #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}\tSys_cal={3} Gyro_cal={4} Accel_cal={5} Mag_cal={6}'.format(
+    #print(.format(
     #      heading, roll, pitch, sys, gyro, accel, mag))
     # Other values you can optionally read:
     # Orientation as a quaternion:
     x,y,z,w = bno.getQuat()
-    print('x={0}, y={1}, z={2}, w={3}'.format(x,y,z,w))
+    print('{:0.4F},{:0.4F},{:0.4F},{},{},{},{},{},{},{},{}'.format(heading, roll, pitch, sys, gyro, accel, mag,x,y,z,w))
     # Sensor temperature in degrees Celsius:
     #temp_c = bno.read_temp()
     # Magnetometer data (in micro-Teslas):
@@ -42,5 +44,6 @@ while True:
     # in meters per second squared):
     #x,y,z = bno.read_gravity()
     # Sleep for a second until the next reading.
-time.sleep(1)
+    out = False
+
 
