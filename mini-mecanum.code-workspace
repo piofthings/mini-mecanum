@@ -2,15 +2,33 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "blink",
-			"path": "dev/arduino/blink"
-		},
-		{
-			"name": "MecanumMotors",
-			"path": "dev/arduino/MecanumMotors"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"sshfs.configs": [
+			{
+				"name": "MiniMecanum",
+				"label": "MiniMecanum",
+				"host": "192.168.50.12",
+				"root": "/home/pi/myprojects/mini-mecanum/",
+				"username": "pi",
+				"password": "raspberry"
+			},
+			{
+				"name": "MiniMecanum2",
+				"host": "192.168.50.13",
+				"root": "/home/pi/myprojects/mini-mecanum",
+				"username": "pi",
+				"password": "raspberry"
+			},
+			{
+				"name": "TidyToys",
+				"label": "TidyToys",
+				"host": "192.168.50.14",
+				"root": "/home/pi/myprojects/mini-mecanum",
+				"username": "pi",
+				"password": "raspberry"
+			}
+		]
+	}
 }

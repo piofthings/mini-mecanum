@@ -1,0 +1,13 @@
+{
+    "sshfs.configs": [
+        {
+            "name": "mini-mecanum-again",
+            "merge": true,
+            "label": "mini-mecanum-again",
+            "host": "192.168.50.12",
+            "root": "/home/pi/myprojects/mini-mecanum/",
+            "username": "pi",
+            "password": "raspberry"
+        }
+    ]
+}
