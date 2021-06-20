@@ -64,7 +64,7 @@ class Line():
                     if stretch:
                         val = int((val - minval) * factor)
                     if thresh:
-                        if val > 100:
+                        if val > 96:
                             val = 255
                         else:
                             val = 0
@@ -163,13 +163,13 @@ class Line():
                 else:
                     prev_post_white = current_pos_white
                     current_pos_white = False
-                    if frame_data.average_row[pos] > 0:
+                    if frame_data.average_row[pos] > 50:
                         if first_grey_pos == 0:
                             first_grey_pos = pos
                         if pos > last_grey_pos:
                             last_grey_pos = pos
             thickness = last_white_pos - first_white_pos + 1
-            if  thickness > 1:
+            if  thickness > 3 and thickness < 10:
                 speed = self.top_speed
                 #good thickness
 
