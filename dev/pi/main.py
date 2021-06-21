@@ -31,6 +31,12 @@ class Main():
 
     __bno55 = BNO055()
 
+    __fork2_box_z_range = [-0.03875732421875,-0.0411376953125]
+    __fork2_box_y_range = [0.03485107421875,0.03570556640625]
+
+    __fork3_box_z_range = [-0.03973388671875,-0.03924560546875]
+    __fork3_box_y_range = [0.03173828125,0.03271484375]
+
     """
     Number of frames that must be marked as "fork" before we star t considering the frame 
     as a fork. Increase value if too many false positives
@@ -50,6 +56,15 @@ class Main():
         if not self.__bno55.begin():
             raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
+    def get_fork_number(self, z, y):
+        fork_number = 1
+        if(z > self.__fork2_box_z_range[0] and z < self.__fork2_box_z_range[1]) and (y > self.__fork2_box_y_range[0] and y < self.__fork2_box_y_range[1]):
+            fork_number = 2
+            return fork_number
+        if(z > self.__fork3_box_z_range[0] and z < self.__fork3_box_z_range[1]) and (z > self.__fork3_box_y_range[0] and y < self.__fork3_box_y_range[1]):
+            fork_number = 3
+            return fork_number
+        return fork_number
 
     def worker(self, item):
         try:
@@ -67,8 +82,9 @@ class Main():
             else:
                 item.is_fork = False
                 self.looking_at_fork = False
-            x,y,z,w = self.__bno55.getQuat()
-            print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{},{},{},{},{}".format(
+            #x,y,z,w = self.__bno55.getQuat()
+            #self.fork_number = self.get_fork_number(z,y)
+            print("{:d},{:f},{:d},{:d},{:d},{},{},{:d},{:d},{}".format(
                 item.index,
                 item.ratio,
                 item.thickness,
@@ -78,11 +94,7 @@ class Main():
                 item.is_straight, 
                 self.continuous_fork_frames_for,
                 self.fork_number,
-                item.average_row,
-                x,
-                y,
-                z,
-                w))
+                item.average_row))
 
             if self.fork_number == 1:
                 self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
@@ -98,12 +110,13 @@ class Main():
 
 
             elif self.fork_number == 3:
-                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 2:
+                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 3:
                     self.fork_number = 4
                     self.__miniMecanum.set_speed_LR(0, 200)        
                     self.one_time_adjustment = True
                     time.sleep(0.25)
                     self.__miniMecanum.set_speed_LR(60, 60)
+                    time.sleep(0.4)
                 else:
                     self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
             else:

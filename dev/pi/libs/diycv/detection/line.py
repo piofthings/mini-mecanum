@@ -200,7 +200,7 @@ class Line():
                 else:
                     ratio = self.prev_frame_data.ratio
                     frame_data.ratio = ratio
-                    speed = self.top_speed
+                    speed = int(self.top_speed / 2)
                 if first_grey_pos > (frame_data.width - last_grey_pos):
                     frame_data.veer_right = True
                 else:
