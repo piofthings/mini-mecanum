@@ -16,13 +16,15 @@ sys.path.append(os.path.abspath(os.path.join(
 from diycv.camera.capture_threshold import CaptureThreshold
 from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey_gpio import SmokeyGpio
-
+from smokeycontroller.smokey_controller import SmokeyController
 
 from bno55.bno55 import BNO055
 
 class Main():
     __challenge = ""
-    __miniMecanum = SmokeyGpio([17,27,23,24,5,6,26,16])
+    __miniMecanum = SmokeyGpio([17,27,23,24,6,5,16,26])
+
+    __smokeyController = None
 
     __command_queue = queue.Queue()
     __captureThresholder = None
@@ -50,6 +52,7 @@ class Main():
 
     def __init__(self, challenge):
         self.__challenge = challenge
+        self.__smokeyController = SmokeyController(self.__miniMecanum, "quit")
         atexit.register(self.cleanup)
         if ("_sim" in challenge):
             self.__is_simulation = True
@@ -144,6 +147,11 @@ class Main():
                 thisdir = os.getcwd() + "/samples/captures/2021-06-20-01"
                 self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
                 self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
+            elif (self.__challenge == 'manual'):
+                self.__smokeyController.start()
+            elif (self.__challenge == 'calibratemotor'):
+                self.__miniMecanum.motor_test()
+
 
         except Exception as e:
             print(e)
@@ -164,7 +172,9 @@ class Main():
             print("Save failed")
 
 if __name__ == '__main__':
-    main = Main("garden_path")
+    # main = Main("garden_path")
+    main = Main('manual')
+    #main = Main('calibratemotor')
     try:
         main.start()
     except:

@@ -111,25 +111,25 @@ class SmokeyGpio():
         current_speed_right_rear = abs(speedRightRear/255)
         if speedLeftFront > 0:
             self.__motor_left_front.forward(current_speed_left_front)
-        elif speedLeft < 0:
+        elif speedLeftFront < 0:
             self.__motor_left_front.backward(current_speed_left_front)
         else:
             self.__motor_left_front.stop()
         if speedLeftRear > 0:
             self.__motor_left_rear.forward(current_speed_left_rear)
-        elif speedLeft < 0:
+        elif speedLeftRear < 0:
             self.__motor_left_rear.backward(current_speed_left_rear)
         else:
             self.__motor_left_rear.stop()
         if speedRightFront > 0:
             self.__motor_right_front.forward(current_speed_right_front)
-        elif speedRight < 0:
+        elif speedRightFront < 0:
             self.__motor_right_front.backward(current_speed_right_front)
         else:
             self.__motor_right_front.stop()
         if speedRightRear > 0:
             self.__motor_right_rear.forward(current_speed_right_rear)
-        elif speedRight < 0:
+        elif speedRightRear < 0:
             self.__motor_right_rear.backward(current_speed_right_rear)
         else:
             self.__motor_right_rear.stop()    
@@ -141,3 +141,37 @@ class SmokeyGpio():
         line = self.__ser.readline().decode('utf-8').rstrip()
         print(line) 
         return line
+
+    def motor_test(self):
+        print("Left front Forward")
+        self.__motor_left_front.forward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Left front Backward")
+        self.__motor_left_front.backward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Left rear Forward")
+        self.__motor_left_rear.forward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Left rear Backward")
+        self.__motor_left_rear.backward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Right front Forward")
+        self.__motor_right_front.forward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Right front Backward")
+        self.__motor_right_front.backward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Right rear Forward")
+        self.__motor_right_rear.forward(128/255)
+        sleep(2)
+        self.set_speed(0)
+        print("Right rear Backward")
+        self.__motor_right_rear.backward(128/255)
+        sleep(2)
+        self.set_speed(0)
