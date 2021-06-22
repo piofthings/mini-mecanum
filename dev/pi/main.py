@@ -104,15 +104,15 @@ class Main():
                     self.__miniMecanum.set_speed_LR(200, 0)        
                     self.one_time_adjustment = True
                     time.sleep(0.25)
-                    self.__miniMecanum.set_speed_LR(120, 120)
+                    self.__miniMecanum.set_speed_LR(90, 90)
                 else:
                     self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
 
 
             elif self.fork_number == 3:
-                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 3:
+                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 1:
                     self.fork_number = 4
-                    self.__miniMecanum.set_speed_LR(0, 200)        
+                    self.__miniMecanum.set_speed_LR(0, 250)        
                     self.one_time_adjustment = True
                     time.sleep(0.25)
                     self.__miniMecanum.set_speed_LR(60, 60)
