@@ -18,7 +18,7 @@ from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey_gpio import SmokeyGpio
 from smokeycontroller.smokey_controller import SmokeyController
 
-from bno55.bno55 import BNO055
+#from bno55.bno55 import BNO055
 
 class Main():
     __challenge = ""
@@ -31,7 +31,7 @@ class Main():
 
     __is_simulation = False
 
-    __bno55 = BNO055()
+    #__bno55 = BNO055()
 
     __fork2_box_z_range = [-0.03875732421875,-0.0411376953125]
     __fork2_box_y_range = [0.03485107421875,0.03570556640625]
@@ -56,8 +56,8 @@ class Main():
         atexit.register(self.cleanup)
         if ("_sim" in challenge):
             self.__is_simulation = True
-        if not self.__bno55.begin():
-            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
+#        if not self.__bno55.begin():
+#            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
     def get_fork_number(self, z, y):
         fork_number = 1
@@ -149,8 +149,7 @@ class Main():
                 self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
             elif (self.__challenge == 'manual'):
                 self.__smokeyController.start()
-            elif (self.__challenge == 'calibratemotor'):
-                self.__miniMecanum.motor_test()
+
 
 
         except Exception as e:
@@ -168,6 +167,7 @@ class Main():
             self.__miniMecanum.set_speed(0)
             self.__miniMecanum.get_power_stats()
             self.__miniMecanum.set_speed(0)
+            self.__miniMecanum.dispose()
         except:
             print("Save failed")
 
