@@ -3,22 +3,34 @@ import csv
 
 x=[]
 y=[]
+fig = plt.figure()
+ax = fig.add_subplot(111)
 
-with open('telemetry-2021-06-20-08.csv', 'r') as csvfile:
+with open('bno1-5.csv', 'r') as csvfile:
     plots= csv.reader(csvfile, delimiter=',')
+    i = 0
     for row in plots:
-        xNum = float(row[41])
-        yNum = float(row[42])
+        yNum = float(row[10])
+        xNum = float(row[11])
         if(xNum < 1 and yNum < 1):
-            x.append(yNum)
-            y.append(xNum)
+            x.append(xNum)
+            y.append(yNum)
+        i = i + 1
+        if i % 4 == 0:
+            plt.plot(x,y, marker='o', label=i)
+            for xy in zip(x, y):                                       # <--
+                ax.annotate('(%s, %s)' % xy, xy=xy, textcoords='data') # <--
+
+            x = []
+            y = []
 
 
-plt.plot(x,y, marker='o', label='')
 
-plt.title('Data from the CSV File: People and Expenses')
 
-plt.xlabel('Number of People')
-plt.ylabel('Expenses')
+plt.title('Data from the CSV File: bno1-5')
+
+plt.xlabel('Column 10 - z')
+plt.ylabel('Column 11 - y')
 print(x)
+plt.grid()
 plt.show()
