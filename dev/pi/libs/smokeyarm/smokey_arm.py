@@ -104,7 +104,7 @@ class SmokeyArm():
             self.__currentZ.throttle = 0.0
         else:
             self.__currentZ.throttle = 1.0
-            timer = threading.Timer(1.5, self.stop_arm)
+            timer = threading.Timer(self.__armRaiseTimeout, self.stop_arm)
             timer.start()  
 
     def stop_arm(self):

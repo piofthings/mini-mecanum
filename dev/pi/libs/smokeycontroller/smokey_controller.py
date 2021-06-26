@@ -23,7 +23,7 @@ from smokeyarm.smokey_arm import SmokeyArm
 class SmokeyController():
     __keyboardController =  None
     __smokeyGpio = None
-    __currentSpeed = 125
+    __currentSpeed = 0
     __i2c = busio.I2C(SCL, SDA)
 
     __pca = PCA9685(__i2c)
@@ -41,16 +41,16 @@ class SmokeyController():
     __max_angle = 36
     __min_angle = 0
 
-    __min_speed = 64
+    __min_speed = 100
 
 
     def __init__(self, smokeyGpio, exit_condition):
         self.__keyboardController = KeyboardController(exit_condition)
         
         self.__smokeyGpio = smokeyGpio
-        self.__greenArm = SmokeyArm(self.__pca, self.__kit.motor3, 12, servo.Servo(self.__pca.channels[2]), servo.Servo(self.__pca.channels[5]), 30, 0, False, 2)
-        self.__redArm   = SmokeyArm(self.__pca, self.__kit.motor2, 22, servo.Servo(self.__pca.channels[1]))
-        self.__blueArm  = SmokeyArm(self.__pca, self.__kit.motor1, 21, servo.Servo(self.__pca.channels[0]), servo.Servo(self.__pca.channels[4]), 30, 0, True, 1)
+        self.__greenArm = SmokeyArm(self.__pca, self.__kit.motor3, 12, servo.Servo(self.__pca.channels[2]), servo.Servo(self.__pca.channels[5]), 30, 0, False, 6)
+        self.__redArm   = SmokeyArm(self.__pca, self.__kit.motor2, 22, servo.Servo(self.__pca.channels[1]), None, 30, 0, False, 10)
+        self.__blueArm  = SmokeyArm(self.__pca, self.__kit.motor1, 21, servo.Servo(self.__pca.channels[0]), servo.Servo(self.__pca.channels[4]), 30, 0, True)
 
     def start(self):
         done_processing = False
@@ -80,7 +80,7 @@ class SmokeyController():
                 elif input_str.strip() == 'y':   # spin clockwise
                     self.spin_clockwise()
                 elif input_str.strip() == 't':   # spin anti-clockwise
-                    self.spin_anticlockwise()
+                    self.spin_anti_clockwise()
                 elif input_str.strip() == 'r':   # select Red Arm
                     self.select_red_arm()
                 elif input_str.strip() == 'g':   # select Green  Arm
@@ -117,9 +117,9 @@ class SmokeyController():
                     self.__redArm.set_mode(2)
                     self.__greenArm.set_mode(2)
                 elif input_str == "0": #STOP
-                    self.increase_speed(0)
+                    self.set_speed(0)
                 elif input_str == "`": #STOP and quit
-                    self.increase_speed(0)
+                    self.set_speed(0)
                     done_processing = True
                     self.__keyboardController.clear()
 
@@ -134,42 +134,73 @@ class SmokeyController():
         self.__currentArm = self.__redArm
 
 
-    def increase_speed(self, speed):
-        if(speed < 256 and speed > -1):
+    def set_speed(self, speed):
+        print ("set_speed {}".format(speed))
+        if(speed < 256 and speed > -255):
             self.__currentSpeed = speed
-        
         self.__smokeyGpio.set_speed(self.__currentSpeed)
 
     def go_straight_forwards(self):
-        self.__currentSpeed = self.__currentSpeed - 4
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
+        self.__currentSpeed = self.__currentSpeed + 10
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, self.__currentSpeed, self.__currentSpeed, self.__currentSpeed)
 
     def go_straight_backwards(self):
-        self.__currentSpeed = self.__currentSpeed - 4
+        if self.__currentSpeed == 0:
+            #Bot is stopped 
+            self.__currentSpeed = -1 * self.__min_speed
+
+        self.__currentSpeed = self.__currentSpeed - 10
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, self.__currentSpeed, self.__currentSpeed, self.__currentSpeed)
 
     def strafe_right(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, -self.__currentSpeed, -self.__currentSpeed, self.__currentSpeed)
 
     def strafe_left(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(-self.__currentSpeed, self.__currentSpeed, self.__currentSpeed, -self.__currentSpeed)
     
     def diagonal_left_forward(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, 0, 0, self.__currentSpeed)
 
     def diagonal_right_forward(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(0, self.__currentSpeed, self.__currentSpeed, 0)
     
     def diagonal_left_reverse(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(-self.__currentSpeed, 0, 0, -self.__currentSpeed)
 
     def diagonal_right_reverse(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(0, -self.__currentSpeed, -self.__currentSpeed, 0)
 
     def spin_clockwise(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, self.__currentSpeed, -self.__currentSpeed, -self.__currentSpeed)
 
     def spin_anti_clockwise(self):
+        if self.__currentSpeed == 0:
+            # Bot is stopped
+            self.__currentSpeed = self.__min_speed
         self.__smokeyGpio.set_speed_LfLrRfRr(-self.__currentSpeed, -self.__currentSpeed, self.__currentSpeed, self.__currentSpeed)
 
 
