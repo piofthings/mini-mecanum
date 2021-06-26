@@ -16,20 +16,23 @@ sys.path.append(os.path.abspath(os.path.join(
 from diycv.camera.capture_threshold import CaptureThreshold
 from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey_gpio import SmokeyGpio
+from smokeycontroller.smokey_controller import SmokeyController
+from smokeyarm.smokey_arm import SmokeyArm
 
-
-from bno55.bno55 import BNO055
+#from bno55.bno55 import BNO055
 
 class Main():
     __challenge = ""
-    __miniMecanum = SmokeyGpio([17,27,23,24,5,6,26,16])
+    __miniMecanum = SmokeyGpio([17,27,23,24,6,5,16,26])
+
+    __smokeyController = None
 
     __command_queue = queue.Queue()
     __captureThresholder = None
 
     __is_simulation = False
 
-    __bno55 = BNO055()
+    #__bno55 = BNO055()
 
     __fork2_box_z_range = [-0.03875732421875,-0.0411376953125]
     __fork2_box_y_range = [0.03485107421875,0.03570556640625]
@@ -50,11 +53,12 @@ class Main():
 
     def __init__(self, challenge):
         self.__challenge = challenge
+        self.__smokeyController = SmokeyController(self.__miniMecanum, "quit")
         atexit.register(self.cleanup)
         if ("_sim" in challenge):
             self.__is_simulation = True
-        if not self.__bno55.begin():
-            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
+#        if not self.__bno55.begin():
+#            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
     def get_fork_number(self, z, y):
         fork_number = 1
@@ -104,15 +108,15 @@ class Main():
                     self.__miniMecanum.set_speed_LR(200, 0)        
                     self.one_time_adjustment = True
                     time.sleep(0.25)
-                    self.__miniMecanum.set_speed_LR(120, 120)
+                    self.__miniMecanum.set_speed_LR(90, 90)
                 else:
                     self.__miniMecanum.set_speed_LR(item.speedL, item.speedR)
 
 
             elif self.fork_number == 3:
-                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 3:
+                if self.one_time_adjustment == False and self.continuous_fork_frames_for > 1:
                     self.fork_number = 4
-                    self.__miniMecanum.set_speed_LR(0, 200)        
+                    self.__miniMecanum.set_speed_LR(0, 250)        
                     self.one_time_adjustment = True
                     time.sleep(0.25)
                     self.__miniMecanum.set_speed_LR(60, 60)
@@ -144,6 +148,10 @@ class Main():
                 thisdir = os.getcwd() + "/samples/captures/2021-06-20-01"
                 self.__captureThresholder = PgmThreshold(self.__command_queue, thisdir)
                 self.__captureThresholder.start_capture(32,32, thresholdEnable, stretchEnable, True)
+            elif (self.__challenge == 'manual'):
+                self.__smokeyController.start()
+
+
 
         except Exception as e:
             print(e)
@@ -160,11 +168,14 @@ class Main():
             self.__miniMecanum.set_speed(0)
             self.__miniMecanum.get_power_stats()
             self.__miniMecanum.set_speed(0)
+            self.__miniMecanum.dispose()
         except:
             print("Save failed")
 
 if __name__ == '__main__':
-    main = Main("garden_path")
+    # main = Main("garden_path")
+    main = Main('manual')
+    #main = Main('calibratemotor')
     try:
         main.start()
     except:
