@@ -17,6 +17,7 @@ from diycv.camera.capture_threshold import CaptureThreshold
 from diycv.filestream.pgm_threshold import PgmThreshold
 from smokey.smokey_gpio import SmokeyGpio
 from smokeycontroller.smokey_controller import SmokeyController
+from smokeyarm.smokey_arm import SmokeyArm
 
 #from bno55.bno55 import BNO055
 

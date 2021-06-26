@@ -5,6 +5,7 @@
 
 from board import SCL, SDA
 import busio
+import time
 
 # This example also relies on the Adafruit motor library available here:
 # https://github.com/adafruit/Adafruit_CircuitPython_Motor
@@ -34,15 +35,18 @@ pca.frequency = 50
 
 # The pulse range is 1000 - 2000 by default.
 #clampLeft = servo.Servo(pca.channels[1])
-swingArmLeft = servo.Servo(pca.channels[0])
-swingArmRight = servo.Servo(pca.channels[3])
+swingArmLeft = servo.Servo(pca.channels[5])
+swingArmRight = servo.Servo(pca.channels[5])
 
-for i in range(90):
-    swingArmLeft.angle = i
-    swingArmRight.angle = i
-for i in range(90):
-    swingArmLeft.angle = 90 - i
-    swingArmRight.angle = 90 - i
+swingArmLeft.angle = 10
+time.sleep(0.5)
+# for i in range(10):
+#     swingArmLeft.angle = i
+#     time.sleep(0.5)
+#     swingArmRight.angle = i
+# for i in range(90):
+#     swingArmLeft.angle = 90 - i
+#     swingArmRight.angle = 90 - i
 
 
 #swingArmRight = 90

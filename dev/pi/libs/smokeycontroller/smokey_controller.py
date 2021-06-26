@@ -18,6 +18,7 @@ from adafruit_motorkit import MotorKit
 
 from gpiozero import Button
 
+from smokeyarm.smokey_arm import SmokeyArm
 
 class SmokeyController():
     __keyboardController =  None
@@ -28,30 +29,30 @@ class SmokeyController():
     __pca = PCA9685(__i2c)
     __pca.frequency = 50
 
-    __currentZ = None 
+    __greenArm = None 
+    __redArm = None
+    __blueArm = None
     __currentArm = None
-    __currentShoulder = None
-    __currentPulse = None 
 
-    __greenButton = None 
-    __redButton = None
-    __blueButton = None
+    __currentlySelectedArm = None
 
     __kit = MotorKit(i2c=board.I2C())
 
     __max_angle = 36
     __min_angle = 0
 
+    __min_speed = 64
+
 
     def __init__(self, smokeyGpio, exit_condition):
         self.__keyboardController = KeyboardController(exit_condition)
+        
         self.__smokeyGpio = smokeyGpio
-        self.__greenButton = Button(12)
-        self.__blueButton = Button(21)
-        self.__redButton = Button(8)
+        self.__greenArm = SmokeyArm(self.__pca, self.__kit.motor3, 12, servo.Servo(self.__pca.channels[2]), servo.Servo(self.__pca.channels[5]), 30, 0, False, 2)
+        self.__redArm   = SmokeyArm(self.__pca, self.__kit.motor2, 22, servo.Servo(self.__pca.channels[1]))
+        self.__blueArm  = SmokeyArm(self.__pca, self.__kit.motor1, 21, servo.Servo(self.__pca.channels[0]), servo.Servo(self.__pca.channels[4]), 30, 0, True, 1)
 
     def start(self):
-
         done_processing = False
         input_str = ""
         while not done_processing:
@@ -87,15 +88,34 @@ class SmokeyController():
                 elif input_str.strip() == 'b':   # select Blue  Arm
                     self.select_blue_arm()
                 elif input_str.strip() == 'o':   # Release hand
-                    self.release_current_hand()
+                    if self.__currentArm != None:
+                        self.__currentArm.release_hand()
                 elif input_str.strip() == 'p':   # Pinch Hand
-                    self.pinch_current_hand()                                        
+                    if self.__currentArm != None:
+                        self.__currentArm.pinch_hand()                                        
                 elif input_str.strip() == 'l':   # Grab Hand
-                    self.grab_current_hand()                                        
+                    if self.__currentArm != None:
+                        self.__currentArm.grab_hand()                                        
                 elif input_str.strip() == '\'':   # Raise selected arm
-                    self.raise_selected_arm()
+                    if self.__currentArm != None:
+                        self.__currentArm.raise_arm()
                 elif input_str.strip() == '/':   # Lower selected arm
-                    self.lower_selected_arm()
+                    if self.__currentArm != None:
+                        self.__currentArm.lower_arm()
+                elif input_str.strip() == 'h':   # Swing arm inwards
+                    if self.__currentArm != None:
+                        self.__currentArm.arm_hug()
+                elif input_str.strip() == 'j':   # Swing arm outwards
+                    if self.__currentArm != None:
+                        self.__currentArm.arm_wide()     
+                elif input_str == "1": #Calibration mode
+                    self.__blueArm.set_mode(1)
+                    self.__redArm.set_mode(1)
+                    self.__greenArm.set_mode(1)
+                elif input_str == "2": #Challenge mode
+                    self.__blueArm.set_mode(2)
+                    self.__redArm.set_mode(2)
+                    self.__greenArm.set_mode(2)
                 elif input_str == "0": #STOP
                     self.increase_speed(0)
                 elif input_str == "`": #STOP and quit
@@ -104,53 +124,15 @@ class SmokeyController():
                     self.__keyboardController.clear()
 
     def select_blue_arm(self):
-        self.__currentArm = servo.Servo(self.__pca.channels[0])
-        self.__currentShoulder = servo.Servo(self.__pca.channels[4])
-        self.__currentZ = self.__kit.motor1
-        self.__currentPulse = self.__blueButton
+        print("\r\n\ Select CurrentArm: Blue")
+        self.__currentArm = self.__blueArm
 
     def select_green_arm(self):
-        self.__currentArm = servo.Servo(self.__pca.channels[1])
-        self.__currentShoulder = servo.Servo(self.__pca.channels[5])
-        self.__currentZ = self.__kit.motor3
-        self.__currentPulse = self.__blueButton
+        self.__currentArm = self.__greenArm
 
     def select_red_arm(self):
-        self.__currentArm = servo.Servo(self.__pca.channels[2])
-        self.__currentShoulder = None
-        self.__currentZ = self.__kit.motor2
-        self.__currentPulse = self.__redButton
+        self.__currentArm = self.__redArm
 
-    def pinch_current_hand(self):
-        self.__currentArm.angle = 0
-        time.sleep(0.5)
-
-    def release_current_hand(self):
-        for i in range(self.__max_angle):
-            self.__currentArm.angle = i
-            time.sleep(0.05)
-
-    def grab_current_hand(self):
-        for i in range(self.__max_angle):
-            if self.__currentPulse.is_pressed:
-                print("Button is pressed")
-                self.__currentArm.angle = self.__currentArm.angle + 3
-                time.sleep(0.05)
-                break            
-            else:
-                self.__currentArm.angle = self.__max_angle - i
-                time.sleep(0.05)
-
-    def raise_selected_arm(self):
-        self.__currentZ.throttle = 1.0
-        time.sleep(0.5)
-        self.__currentZ.throttle = 0.0
-
-
-    def lower_selected_arm(self):
-        self.__currentZ.throttle = -1.0
-        time.sleep(0.5)
-        self.__currentZ.throttle = 0.0
 
     def increase_speed(self, speed):
         if(speed < 256 and speed > -1):
@@ -159,10 +141,12 @@ class SmokeyController():
         self.__smokeyGpio.set_speed(self.__currentSpeed)
 
     def go_straight_forwards(self):
+        self.__currentSpeed = self.__currentSpeed - 4
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, self.__currentSpeed, self.__currentSpeed, self.__currentSpeed)
 
     def go_straight_backwards(self):
-        self.__smokeyGpio.set_speed_LfLrRfRr(-self.__currentSpeed, -self.__currentSpeed, -self.__currentSpeed, -self.__currentSpeed)
+        self.__currentSpeed = self.__currentSpeed - 4
+        self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, self.__currentSpeed, self.__currentSpeed, self.__currentSpeed)
 
     def strafe_right(self):
         self.__smokeyGpio.set_speed_LfLrRfRr(self.__currentSpeed, -self.__currentSpeed, -self.__currentSpeed, self.__currentSpeed)

@@ -40,10 +40,23 @@ pca.frequency = 50
 # The pulse range is 1000 - 2000 by default.
 clampLeft = servo.Servo(pca.channels[0])
 swingArmLeft = servo.Servo(pca.channels[5])
-button = Button(12)
+button12 = Button(12)
+button8 = Button(22)
+button21 = Button(21)
 
-clampLeft.angle = 0
-time.sleep(0.5)
+while True:
+    if button12.is_pressed:
+        print("Button 12 is pressed")
+    if button8.is_pressed:
+        print("Button 8 is pressed")
+    if button21.is_pressed:
+        print("Button 21 is pressed")
+    time.sleep(0.5)
+
+# clampLeft.angle = 0
+# time.sleep(0.5)
+# clampLeft.angle = -30
+# time.sleep(0.5)
 # max = 40
 # for i in range(max):
 #      clampLeft.angle = i
